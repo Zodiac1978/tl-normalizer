@@ -9,8 +9,7 @@ http://www.w3.org/International/docs/charmod-norm/#choice-of-normalization-form
 
 ## Requirements
 
-Requires PHP 5.3+
-Be sure to have the PHP-Normalizer-extension (intl and icu) installed.
+For best results have PHP 5.3+ and the PHP-Normalizer-extension (intl and icu) installed.
 See: http://php.net/manual/en/normalizer.normalize.php
 
 ## Installation
@@ -18,6 +17,10 @@ See: http://php.net/manual/en/normalizer.normalize.php
 If you don’t know how to install a plugin for WordPress, [here’s how](http://codex.wordpress.org/Managing_Plugins#Installing_Plugins).
 
 ## Changelog
+
+### 2.0.0
+* Support PHP without the Normalizer extension by using a polyfill.
+* Support normalizing text pasted into tinymce, using a polyfill for browsers without String.prototype.normalize.
 
 ### 1.0
 

@@ -49,5 +49,6 @@ Sorry, but I don't have a clue. Maybe just a little bit.
 = 2.0.0 =
 * Support PHP without the Normalizer extension by using a polyfill.
 * Support normalizing text pasted into tinymce, using a polyfill for browsers without String.prototype.normalize.
+
 = 1.0.0 =
 * Initial release
