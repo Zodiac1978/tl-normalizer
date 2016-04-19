@@ -94,22 +94,124 @@ class TLNormalizer {
 	 * Called on 'admin_enqueue_scripts' action.
 	 */
 	function admin_enqueue_scripts( $hook_suffix ) {
-		if ( ! in_array( $hook_suffix, array( 'post.php', 'post-new.php' ) ) ) {
-			return;
-		}
-
-		$suffix = ''; // defined( "SCRIPT_DEBUG" ) && SCRIPT_DEBUG ? '' : '.min'; // Don't bother with minifieds
+		$suffix = ''; // defined( "SCRIPT_DEBUG" ) && SCRIPT_DEBUG ? '' : '.min'; // Don't bother with minifieds for the mo.
 
 		// Load the javascript polyfill https://github.com/walling/unorm
 		wp_enqueue_script( 'tln-unorm', plugins_url( 'unorm/lib/unorm' . $suffix . '.js', __FILE__ ), array(), '1.0.0' );
 
-		// Our script. Normalizes on paste in tinymce.
-		wp_enqueue_script( 'tl-normalize', plugins_url( 'js/tl-normalize' . $suffix . '.js', __FILE__ ), array( 'jquery', 'tln-unorm' ), '1.0.0' );
+		// Our script. Normalizes on paste in tinymce and in admin input/textareas and in some media stuff.
+		add_action( 'admin_print_footer_scripts', array( $this, 'admin_print_footer_scripts' ) );
 
-		add_filter( 'content_save_pre', array( $this, 'tl_normalizer' ) );
-		add_filter( 'title_save_pre' , array( $this, 'tl_normalizer' ) );
-		add_filter( 'pre_comment_content' , array( $this, 'tl_normalizer' ) );
-		add_filter( 'excerpt_save_pre' , array( $this, 'tl_normalizer' ) );
+		if ( in_array( $hook_suffix, array( 'post.php', 'post-new.php', 'edit.php' ) ) ) {
+			add_filter( 'content_save_pre', array( $this, 'tl_normalizer' ) );
+			add_filter( 'title_save_pre' , array( $this, 'tl_normalizer' ) );
+			add_filter( 'pre_comment_content' , array( $this, 'tl_normalizer' ) );
+			add_filter( 'excerpt_save_pre' , array( $this, 'tl_normalizer' ) );
+		}
+	}
+
+	/**
+	 * Called on 'admin_print_footer_scripts' action.
+	 */
+	function admin_print_footer_scripts() {
+		?>
+<script type="text/javascript">
+/*jslint ass: true, nomen: true, plusplus: true, regexp: true, vars: true, white: true, indent: 4 */
+/*global jQuery, wp */
+/*exported tl_normalize */
+var tl_normalize = tl_normalize || {}; // Our namespace.
+
+( function ( $ ) {
+	'use strict';
+
+	/**
+	 * Helper to normalize text pasted into text inputs and textareas.
+	 */
+	tl_normalize.input_textarea_normalize_on_paste = function ( context ) {
+		$( 'input[type="text"], textarea', context ).on( 'paste', function ( event ) {
+			var $el = $(this);
+			if ( $el.val().normalize ) {
+				// http://stackoverflow.com/a/1503425/664741
+				setTimeout( function () {
+					<?php if ( defined( "SCRIPT_DEBUG" ) && SCRIPT_DEBUG ) ?> var before = $el.val();
+					$el.val( $el.val().normalize() );
+					<?php if ( defined( "SCRIPT_DEBUG" ) && SCRIPT_DEBUG ) ?> tl_normalize.dmp_before_and_after( before, $el.val() );
+				} );
+			}
+		} );
+	};
+
+	/**
+	 * Debug helper - dump before and after.
+	 */
+	<?php if ( defined( "SCRIPT_DEBUG" ) && SCRIPT_DEBUG ) : ?>
+	tl_normalize.dmp_before_and_after = function ( before, after ) {
+		var i, before_dmp = '', after_dmp = '';
+		if ( before === after ) {
+			console.log( 'normalize same' );
+		} else {
+			for ( i = 0; i < before.length; i++ ) {
+				before_dmp += ( '0000' + before.charCodeAt( i ).toString( 16 ) ).slice( -4 ) + ' ';
+			}
+			for ( i = 0; i < after.length; i++ ) {
+				after_dmp += ( '0000' + after.charCodeAt( i ).toString( 16 ) ).slice( -4 ) + ' ';
+			}
+			console.log( 'normalize different\nbefore_dmp=%s\n after_dmp=%s', before_dmp, after_dmp );
+		}
+	};
+	<?php endif; ?>
+
+	/**
+	 * Normalize text pasted into tinymce.
+	 */
+	$( document ).on( 'tinymce-editor-init', function ( event, editor ) {
+		// Using PastePreProcess, which is fired with the paste as a HTML string set in event.content.
+		// Easy option, may not be the best.
+		editor.on( 'PastePreProcess', function( event ) {
+			if ( event.content && event.content.length && event.content.normalize ) {
+				<?php if ( defined( "SCRIPT_DEBUG" ) && SCRIPT_DEBUG ) ?> var before = event.content;
+				event.content = event.content.normalize();
+				<?php if ( defined( "SCRIPT_DEBUG" ) && SCRIPT_DEBUG ) ?> tl_normalize.dmp_before_and_after( before, event.content );
+			}
+		} );
+	} );
+
+	$( function () {
+		var $wpcontent = $( '#wpcontent' ), old_details_render, old_display_render;
+
+		// Any standard admin text input or textarea. May need refining.
+		if ( $wpcontent.length ) {
+			tl_normalize.input_textarea_normalize_on_paste( $wpcontent );
+		}
+
+		// Media.
+	 	if ( wp && wp.media && wp.media.view ) {
+			if ( wp.media.view.Attachment && wp.media.view.Attachment.Details ) {
+				// Override render. Probably not the best option.
+				old_details_render = wp.media.view.Attachment.Details.prototype.render;
+				wp.media.view.Attachment.Details.prototype.render = function () {
+					old_details_render.apply( this, arguments );
+					tl_normalize.input_textarea_normalize_on_paste( this.$el );
+				};
+			}
+			if ( wp.media.view.Settings && wp.media.view.Settings.AttachmentDisplay ) {
+				// Override render. Again, probably not the best option.
+				old_display_render = wp.media.view.Settings.AttachmentDisplay.prototype.render;
+				wp.media.view.Settings.AttachmentDisplay.prototype.render = function () {
+					old_display_render.apply( this, arguments );
+					tl_normalize.input_textarea_normalize_on_paste( this.$el );
+				};
+			}
+			// TODO: Other media stuff.
+		}
+
+		// TODO: Customizer.
+		// TODO: Other stuff.
+	} );
+
+} )( jQuery );
+</script>
+		<?php
 	}
 
 	function tl_normalizer( $content ) {
