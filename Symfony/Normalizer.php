@@ -10,6 +10,7 @@
  */
 
 // gitlost removed namespace stuff, renamed to TLN_Normalizer to avoid conflicts, appended bootstrap, removed function exists check.
+// gitlost substituted tl_check_valid_utf8() for PCRE UTF-8 mode tests.
 // https://github.com/symfony/polyfill/tree/master/src/Intl/Normalizer
 
 // namespace Symfony\Polyfill\Intl\Normalizer; // gitlost
@@ -48,7 +49,7 @@ class TLN_Normalizer // gitlost
         if (strspn($s .= '', self::$ASCII) === strlen($s)) {
             return true;
         }
-        if (self::NFC === $form && preg_match('//u', $s) && !preg_match('/[^\x00-\x{2FF}]/u', $s)) {
+        if (self::NFC === $form && tl_check_valid_utf8($s, true /*and_nfc_normalized*/)) { // gitlost if (self::NFC === $form && preg_match('//u', $s) && !preg_match('/[^\x00-\x{2FF}]/u', $s)) {
             return true;
         }
 
@@ -57,7 +58,7 @@ class TLN_Normalizer // gitlost
 
     public static function normalize($s, $form = self::NFC)
     {
-        if (!preg_match('//u', $s .= '')) {
+        if (!tl_check_valid_utf8($s .= '')) { // gitlost if (!preg_match('//u', $s .= '')) {
             return false;
         }
 
