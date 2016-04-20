@@ -60,7 +60,6 @@
 // gitlost: Modified to just return true/false, and to optionally check if in NFC normalized form.
 function tl_check_valid_utf8($str, $and_nfc_normalized = false) // gitlost function utf8ToUnicode(&$str)
 {
-	wpfm_debug_log($str);
   $mState = 0;     // cached expected number of octets after the current octet
                    // until the beginning of the next UTF8 character sequence
   $mUcs4  = 0;     // cached Unicode character
