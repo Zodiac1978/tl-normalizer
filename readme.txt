@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: Unicode, Normalization, Form C, Unicode Normalization Form C, Normalize, Normalizer
 Requires at least: 1.5.2
 Tested up to: 4.5
-Stable tag: 1.0.0
+Stable tag: 2.0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -45,6 +45,14 @@ Sorry, but I don't have a clue. Maybe just a little bit.
 3. Error message from W3C
 
 == Changelog ==
+
+= 2.0.2 =
+* Fix Normalizer dependency on PCRE with UTF-8.
+* Fix adding filters too late. Use 'init' not 'admin_init' action.
+* Add paste normalization to front-end text inputs/textareas.
+
+= 2.0.1 =
+* Add paste normalization to admin text inputs/textareas and some media stuff.
 
 = 2.0.0 =
 * Support PHP without the Normalizer extension by using a polyfill.
