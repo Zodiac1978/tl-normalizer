@@ -3,7 +3,7 @@
  * Plugin Name: Normalizer
  * Plugin URI: https://github.com/Zodiac1978/tl-normalizer
  * Description: Normalizes content, excerpt, title and comment content to Normalization Form C.
- * Version: 2.0.0
+ * Version: 2.0.2
  * Author: Torsten Landsiedel
  * Author URI: http://torstenlandsiedel.de
  * License: GPLv2
@@ -22,6 +22,9 @@ http://pento.net/2014/02/18/dont-let-your-plugin-be-activated-on-incompatible-si
 
 class TLNormalizer {
 
+	var $no_js = false; // For testing/debugging.
+	var $no_filters = false; // For testing/debugging.
+
 	function __construct() {
 
 		add_action( 'admin_init', array( $this, 'check_version' ) );
@@ -36,7 +39,7 @@ class TLNormalizer {
 			return;
 		}
 
-		add_action( 'admin_init', array( $this, 'admin_init' ) );
+		add_action( 'init', array( $this, 'init' ) );
 	}
 
 	// The primary sanity check, automatically disable the plugin on activation if it doesn't
@@ -77,43 +80,73 @@ class TLNormalizer {
 	}
 
 	/**
-	 * Called on 'admin_init' action.
-	 * Lateish action, called after 'init' and 'admin_menu' but before 'admin_enqueue_scripts'.
+	 * Called on 'init' action.
 	 */
-	function admin_init() {
+	function init() {
 
 		if ( ! function_exists( 'normalizer_is_normalized' ) ) {
+			$dirname = dirname( __FILE__ );
+
+			// To avoid a PCRE dependency, the Symfony Normalizer polyfill has been modified to call tl_check_valid_utf8() instead of using preg_match() in UTF-8 mode when checking UTF-8 validity.
+
+			// If the version of PCRE is that which came with PHP before 5.3.4 (when 5 and 6 octet sequences were allowed) or if it isn't compiled with UTF-8 support...
+			if ( version_compare( PHP_VERSION, '5.3.4', '<' ) || false === preg_match( '//u', '' ) ) {
+				// Load utf-8 validator tl_check_valid_utf8() https://hsivonen.fi/php-utf8/
+				require $dirname . '/php-utf8/utf8.php';
+			} else { // Use PCRE.
+				function tl_check_valid_utf8( $string, $and_nfc_normalized = false ) {
+					if ( $and_nfc_normalized ) {
+						return preg_match( '//u', $string ) && ! preg_match( '/[^\x00-\x{2FF}]/u', $string ); // Original Normalizer validity and rough not-NFC normalized check.
+					}
+					return preg_match( '//u', $string ); // Original Normalizer validity check.
+				}
+			}
 			// Load the Symfony polyfill https://github.com/symfony/polyfill/tree/master/src/Intl/Normalizer
-			require dirname( __FILE__ ) . '/Symfony/Normalizer.php';
+			require $dirname . '/Symfony/Normalizer.php';
 		}
 
-		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
-	}
-
-	/**
-	 * Called on 'admin_enqueue_scripts' action.
-	 */
-	function admin_enqueue_scripts( $hook_suffix ) {
-		$suffix = ''; // defined( "SCRIPT_DEBUG" ) && SCRIPT_DEBUG ? '' : '.min'; // Don't bother with minifieds for the mo.
-
-		// Load the javascript polyfill https://github.com/walling/unorm
-		wp_enqueue_script( 'tln-unorm', plugins_url( 'unorm/lib/unorm' . $suffix . '.js', __FILE__ ), array(), '1.0.0' );
-
-		// Our script. Normalizes on paste in tinymce and in admin input/textareas and in some media stuff.
-		add_action( 'admin_print_footer_scripts', array( $this, 'admin_print_footer_scripts' ) );
-
-		if ( in_array( $hook_suffix, array( 'post.php', 'post-new.php', 'edit.php' ) ) ) {
+		if ( ! $this->no_filters ) {
+			// Add them here. Too late otherwise.
+			// TODO: work out which filters to use, and when.
 			add_filter( 'content_save_pre', array( $this, 'tl_normalizer' ) );
 			add_filter( 'title_save_pre' , array( $this, 'tl_normalizer' ) );
 			add_filter( 'pre_comment_content' , array( $this, 'tl_normalizer' ) );
 			add_filter( 'excerpt_save_pre' , array( $this, 'tl_normalizer' ) );
 		}
+
+		if ( ! $this->no_js ) {
+			if ( is_admin() ) {
+				if ( ! defined( 'DOING_AJAX' ) || ! DOING_AJAX ) {
+					add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+				}
+			} else {
+				add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+			}
+		}
 	}
 
 	/**
-	 * Called on 'admin_print_footer_scripts' action.
+	 * Called on 'admin_enqueue_scripts' and 'wp_enqueue_scripts' actions.
 	 */
-	function admin_print_footer_scripts() {
+	function enqueue_scripts() {
+		$suffix = ''; // defined( "SCRIPT_DEBUG" ) && SCRIPT_DEBUG ? '' : '.min'; // Don't bother with minifieds for the mo.
+
+		// Load the javascript polyfill https://github.com/walling/unorm
+		wp_enqueue_script( 'tln-unorm', plugins_url( 'unorm/lib/unorm' . $suffix . '.js', __FILE__ ), array(), '1.0.0' );
+
+		// Our script. Normalizes on paste in tinymce and in admin input/textareas and in some media stuff and in front-end input/textareas.
+		if ( is_admin() ) {
+			add_action( 'admin_print_footer_scripts', array( $this, 'print_footer_scripts' ) );
+		} else {
+			add_action( 'wp_print_footer_scripts', array( $this, 'print_footer_scripts' ) );
+		}
+	}
+
+	/**
+	 * Called on 'admin_print_footer_scripts' and 'wp_print_footer_scripts' actions.
+	 */
+	function print_footer_scripts() {
+		$is_admin = is_admin();
 		?>
 <script type="text/javascript">
 /*jslint ass: true, nomen: true, plusplus: true, regexp: true, vars: true, white: true, indent: 4 */
@@ -125,10 +158,11 @@ var tl_normalize = tl_normalize || {}; // Our namespace.
 	'use strict';
 
 	/**
-	 * Helper to normalize text pasted into text inputs and textareas.
+	 * Helper to normalize text pasted into text-like inputs and textareas.
 	 */
 	tl_normalize.input_textarea_normalize_on_paste = function ( context ) {
-		$( 'input[type="text"], textarea', context ).on( 'paste', function ( event ) {
+		// TODO: Other types: "email", "password", "url" ??
+		$( 'input[type="text"], input[type="search"], textarea', context ).on( 'paste', function ( event ) {
 			var $el = $(this);
 			if ( $el.val().normalize ) {
 				// http://stackoverflow.com/a/1503425/664741
@@ -177,6 +211,7 @@ var tl_normalize = tl_normalize || {}; // Our namespace.
 	} );
 
 	$( function () {
+<?php if ( $is_admin ) : ?>
 		var $wpcontent = $( '#wpcontent' ), old_details_render, old_display_render;
 
 		// Any standard admin text input or textarea. May need refining.
@@ -206,7 +241,15 @@ var tl_normalize = tl_normalize || {}; // Our namespace.
 		}
 
 		// TODO: Customizer.
+	 	if ( wp && wp.customize ) {
+		}
 		// TODO: Other stuff.
+
+<?php else : /*Front end*/ ?>
+
+		// Any standard text input or textarea. May need refining.
+		tl_normalize.input_textarea_normalize_on_paste();
+<?php endif; ?>
 	} );
 
 } )( jQuery );
@@ -227,7 +270,10 @@ var tl_normalize = tl_normalize || {}; // Our namespace.
 		 * See: http://php.net/manual/en/normalizer.normalize.php
 		 */
 		if ( '' !== $content && ! normalizer_is_normalized( $content ) ) {
-			$content = normalizer_normalize( $content );
+			$normalized = normalizer_normalize( $content );
+			if ( false !== $normalized ) { // Not validating so don't set on error.
+				$content = $normalized;
+			}
 		}
 
 		return $content;
