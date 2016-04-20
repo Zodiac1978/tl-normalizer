@@ -16,10 +16,12 @@ For everyone getting this warning from W3C validator: "Text run is not in Unicod
 
 See: http://www.w3.org/International/docs/charmod-norm/#choice-of-normalization-form
 
-For best results have PHP 5.3+ and the PHP-Normalizer-extension (intl and icu) installed.
+For best results have PHP 5.3+ and the PHP Normalizer extension (intl and icu) installed.
+
+However the claim is that this version should work without the PHP Normalizer extension being installed, or if your installation
+is without UTF-8 for PCRE, or if you're running PHP 5.2.4...
 
 See: http://php.net/manual/en/normalizer.normalize.php
-
 See also: https://core.trac.wordpress.org/ticket/30130
 
 == Installation ==
