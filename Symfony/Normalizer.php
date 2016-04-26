@@ -1,5 +1,8 @@
 <?php
 
+// Exit if accessed directly. // gitlost
+if ( ! defined( 'ABSPATH' ) ) exit; // gitlost
+
 /*
  * This file is part of the Symfony package.
  *
@@ -9,8 +12,8 @@
  * file that was distributed with this source code.
  */
 
-// gitlost removed namespace stuff, renamed to TLN_Normalizer to avoid conflicts, appended bootstrap, removed function exists check.
-// gitlost substituted tl_check_valid_utf8() for PCRE UTF-8 mode tests.
+// gitlost removed namespace stuff, renamed to TLN_Normalizer to avoid conflicts, appended bootstrap, allowed to be included more than once.
+// gitlost substituted tln_is_valid_utf8()/tln_is_subset_NFC() for PCRE UTF-8 mode tests.
 // https://github.com/symfony/polyfill/tree/master/src/Intl/Normalizer
 
 // namespace Symfony\Polyfill\Intl\Normalizer; // gitlost
@@ -25,6 +28,7 @@
  *
  * @internal
  */
+if ( ! class_exists( 'TLN_Normalizer' ) ) : // Allow file to be included more than once (for testing) // gitlost
 class TLN_Normalizer // gitlost
 {
     const NONE = 1;
@@ -49,7 +53,7 @@ class TLN_Normalizer // gitlost
         if (strspn($s .= '', self::$ASCII) === strlen($s)) {
             return true;
         }
-        if (self::NFC === $form && tl_check_valid_utf8($s, true /*and_nfc_normalized*/)) { // gitlost if (self::NFC === $form && preg_match('//u', $s) && !preg_match('/[^\x00-\x{2FF}]/u', $s)) {
+        if (self::NFC === $form && tln_is_valid_utf8($s) && tln_is_subset_NFC($s)) { // gitlost if (self::NFC === $form && preg_match('//u', $s) && !preg_match('/[^\x00-\x{2FF}]/u', $s)) {
             return true;
         }
 
@@ -58,7 +62,7 @@ class TLN_Normalizer // gitlost
 
     public static function normalize($s, $form = self::NFC)
     {
-        if (!tl_check_valid_utf8($s .= '')) { // gitlost if (!preg_match('//u', $s .= '')) {
+        if (!tln_is_valid_utf8($s .= '')) { // gitlost if (!preg_match('//u', $s .= '')) {
             return false;
         }
 
@@ -287,13 +291,14 @@ class TLN_Normalizer // gitlost
 
     private static function getData($file)
     {
-        if (file_exists($file = __DIR__.'/Resources/unidata/'.$file.'.ser')) {
-            return unserialize(file_get_contents($file));
+        if (file_exists($file = __DIR__.'/Resources/unidata/'.$file.'.php')) {
+            return require $file;
         }
 
         return false;
     }
 }
+endif; // gitlost
 
 // symfony/polyfill/src/Intl/Normalizer/bootstrap.php // gitlost
 
@@ -306,7 +311,72 @@ class TLN_Normalizer // gitlost
  * file that was distributed with this source code.
  */
 //use Symfony\Polyfill\Intl\Normalizer as p; // gitlost
-//if (!function_exists('normalizer_is_normalized')) { // gitlost
+if (!function_exists('normalizer_is_normalized')) {
     function normalizer_is_normalized($s, $form = /*p\*/TLN_Normalizer::NFC) { return /*p\*/TLN_Normalizer::isNormalized($s, $form); } // gitlost
     function normalizer_normalize($s, $form = /*p\*/TLN_Normalizer::NFC) { return /*p\*/TLN_Normalizer::normalize($s, $form); } // gitlost
-//} // gitlost
+}
+
+// gitlost begin
+if ( $this->no_normalizer ) { // For testing when have PHP Normalizer.
+	if ( ! function_exists( 'tl_normalizer_is_normalized' ) ) {
+		function tl_normalizer_is_normalized($s, $form = /*p\*/TLN_Normalizer::NFC) { return /*p\*/TLN_Normalizer::isNormalized($s, $form); }
+		function tl_normalizer_normalize($s, $form = /*p\*/TLN_Normalizer::NFC) { return /*p\*/TLN_Normalizer::normalize($s, $form); }
+	}
+}
+
+global $tln_using_pcre_utf8;
+// If the version of PCRE is that which came with PHP before 5.3.4 (when 5 and 6 octet sequences were allowed) or if it isn't compiled with UTF-8 support...
+$tln_using_pcre_utf8 = ! ( $this->no_pcre_utf8 || version_compare( PHP_VERSION, '5.3.4', '<' ) || false === preg_match( '//u', '' ) );
+
+if ( ! function_exists( 'tln_is_valid_utf8' ) ) {
+	// To avoid a PCRE dependency, the Symfony Normalizer polyfill has been modified to call tln_is_valid_utf8() instead of using preg_match() directly.
+	function tln_is_valid_utf8( $string ) {
+		global $tln_using_pcre_utf8;
+
+		if ( $tln_using_pcre_utf8 ) {
+			return preg_match( '//u', $string ); // Original Normalizer validity check.
+		}
+
+		// Taken from wpdb::strip_invalid_text() in "wp-includes/wp-db.php".
+		// See also https://www.w3.org/International/questions/qa-forms-utf-8
+		$utf8_regex = '/
+			(
+				(?: [\x00-\x7F]                  # single-byte sequences   0xxxxxxx
+				|   [\xC2-\xDF][\x80-\xBF]       # double-byte sequences   110xxxxx 10xxxxxx
+				|   \xE0[\xA0-\xBF][\x80-\xBF]   # triple-byte sequences   1110xxxx 10xxxxxx * 2
+				|   [\xE1-\xEC][\x80-\xBF]{2}
+				|   \xED[\x80-\x9F][\x80-\xBF]
+				|   [\xEE-\xEF][\x80-\xBF]{2}
+				|   \xF0[\x90-\xBF][\x80-\xBF]{2} # four-byte sequences   11110xxx 10xxxxxx * 3
+				|   [\xF1-\xF3][\x80-\xBF]{3}
+				|   \xF4[\x80-\x8F][\x80-\xBF]{2}
+				){1,40}                          # ...one or more times
+			)
+			| .                                  # anything else
+			/x';
+
+		return $string === preg_replace( $utf8_regex, '$1', $string );
+	}
+
+	// To avoid a PCRE dependency, the Symfony Normalizer polyfill has been modified to call tln_is_subset_NFC() instead of using preg_match() directly.
+	function tln_is_subset_NFC( $string ) {
+		global $tln_using_pcre_utf8;
+
+		if ( $tln_using_pcre_utf8 ) {
+			return ! preg_match( '/[^\x00-\x{2FF}]/u', $string ); // Original Normalizer rough NFC normalized check. Will give false negatives. Perhaps TODO: make more accurate.
+		}
+
+		// Rough NFC test. Matches Normalizer [^\x00-\x{2FF}] pattern. Will give false negatives. Perhaps TODO: make more accurate.
+		$subset_nfc_regex = '/
+			(
+				(?: [\x00-\x7F]                  # single-byte sequences   0xxxxxxx
+				|   [\xC2-\xCB][\x80-\xBF]       # double-byte sequences   110xxxxx 10xxxxxx up to U+02FF
+				){1,40}                          # ...one or more times
+			)
+			| .                                  # anything else
+			/x';
+
+		return $string === preg_replace( $subset_nfc_regex, '$1', $string );
+	}
+}
+// gitlost end

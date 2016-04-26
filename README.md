@@ -24,6 +24,16 @@ If you don’t know how to install a plugin for WordPress, [here’s how](http:/
 
 ## Changelog
 
+### 2.0.3
+* Add (a lot) more filters.
+* Update to latest version of Symfony Normalizer (uses ".php" files instead of ".ser" files for data for optimization reasons).
+* Use single-byte regex instead of PHP for-loop to deal with PCRE with no UTF-8.
+* Add customizer paste.
+* Fix caret position on paste (uses rangyinputs jquery plugin).
+* Facilitate testing/debugging.
+* Port Symfony unit tests.
+* Add some limited unit tests for posts, comments, users, options.
+
 ### 2.0.2
 * Fix Normalizer dependency on PCRE with UTF-8.
 * Fix adding filters too late. Use 'init' not 'admin_init' action.

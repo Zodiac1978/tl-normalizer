@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: Unicode, Normalization, Form C, Unicode Normalization Form C, Normalize, Normalizer
 Requires at least: 1.5.2
 Tested up to: 4.5
-Stable tag: 2.0.2
+Stable tag: 2.0.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -47,6 +47,16 @@ Sorry, but I don't have a clue. Maybe just a little bit.
 3. Error message from W3C
 
 == Changelog ==
+
+= 2.0.3 =
+* Add (a lot) more filters.
+* Update to latest version of Symfony Normalizer (uses ".php" files instead of ".ser" files for data for optimization reasons).
+* Use single-byte regex instead of PHP for-loop to deal with PCRE with no UTF-8.
+* Add customizer paste.
+* Fix caret position on paste (uses rangyinputs jquery plugin).
+* Facilitate testing/debugging.
+* Port Symfony unit tests.
+* Add some limited unit tests for posts, comments, users, options.
 
 = 2.0.2 =
 * Fix Normalizer dependency on PCRE with UTF-8.
