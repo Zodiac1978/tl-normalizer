@@ -96,7 +96,7 @@ class TLNormalizer {
 	var $added_filters = array(); // Array of whether filters added or not per base.
 
 	// For testing/debugging.
-	var $dont_js = true, $dont_paste = false, $dont_filter = false, $no_normalizer = true;
+	var $dont_js = false, $dont_paste = false, $dont_filter = false, $no_normalizer = false;
 
 	/**
 	 * Check system compatibility, add 'init' action.
