@@ -9,6 +9,9 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 if ( WP_DEBUG ) :
 
 if ( ! defined( 'TLN_DEBUG' ) ) define( 'TLN_DEBUG', WP_DEBUG );
+if ( ! defined( 'TLN_DEBUG_PRINT_LIMIT' ) ) define( 'TLN_DEBUG_PRINT_LIMIT', 512 );
+
+if ( ! defined( 'WP_CONTENT_DIR' ) ) define( 'WP_CONTENT_DIR', '' );
 
 /**
  * Error log helper. Prints arguments, prefixing file, line and function called from.
@@ -43,13 +46,13 @@ function tln_debug_trace( $trace, $func_get_args ) {
 	if ( ( $function = isset( $trace[1]['function'] ) ? $trace[1]['function'] : '' ) && ! empty( $trace[1]['args'] ) ) {
 		$function_args = array_reduce( $trace[1]['args'], function ( $carry, $item ) {
 			return ( $carry === null ? '' : $carry . ', ' )
-					. ( is_array( $item ) ? 'Array' : ( is_object( $item ) ? 'Object' : ( is_null( $item ) ? 'null' : str_replace( "\n", '', print_r( $item, true ) ) ) ) );
+					. ( is_array( $item ) ? 'Array' : ( is_object( $item ) ? 'Object' : ( is_null( $item ) ? 'null' : str_replace( "\n", '', tln_print_r( $item ) ) ) ) );
 		} );
 	}
 
-	$ret[] = $file . ':' . $line . ' ' . $function . '(' . $function_args . ') ';
+	$ret[] = $file . ':' . $line . ' ' . $function . '(' . tln_print_r( $function_args ) . ') '; // Limit $function_args length.
 
-	foreach ( $func_get_args as $func_get_arg ) $ret[] = is_array( $func_get_arg ) || is_object( $func_get_arg ) ? print_r( $func_get_arg, true ) : $func_get_arg;
+	foreach ( $func_get_args as $func_get_arg ) $ret[] = is_array( $func_get_arg ) || is_object( $func_get_arg ) ? tln_print_r( $func_get_arg ) : $func_get_arg;
 
 	return $ret;
 }
@@ -73,6 +76,24 @@ function tln_backtrace( $offset = 0, $length = null ) {
 	}
 	if ( $length === null ) $length = 20;
 	return "\n" . implode( "\n", array_reverse( array_slice( $ret, $offset + 1, $length ) ) );
+}
+
+/**
+ * Wrapper around PHP print_r() to limit length dumped.
+ */
+function tln_print_r( $var ) {
+	$print_r = print_r( $var, true );
+	if ( is_array( $print_r ) ) {
+		return array_map( 'tln_print_r_limit_cb', $print_r );
+	}
+	return tln_print_r_limit_cb( $print_r );
+}
+
+/**
+ * Callback for tln_print_r().
+ */
+function tln_print_r_limit_cb( $str ) {
+	return substr( $str, 0, TLN_DEBUG_PRINT_LIMIT );
 }
 
 /**
@@ -120,12 +141,33 @@ function tln_bin2hex( $var ) {
 	return $ret;
 }
 
+/**
+ * Format bytes in human-friendly manner.
+ * From http://stackoverflow.com/a/2510459
+ */
+function tln_format_bytes( $bytes, $precision = 2 ) { 
+    $units = array( 'B', 'KB', 'MB', 'GB', 'TB' ); 
+
+    $bytes = max( $bytes, 0 ); 
+    $pow = floor( ( $bytes ? log( $bytes ) : 0 ) / log( 1024 ) ); 
+    $pow = min( $pow, count( $units ) - 1 ); 
+
+    // Uncomment one of the following alternatives
+    // $bytes /= pow( 1024, $pow );
+    $bytes /= ( 1 << ( 10 * $pow ) ); 
+
+    return round( $bytes, $precision ) . ' ' . $units[$pow]; 
+}
+
 else :
 
 function tln_error_log() { return ''; }
 function tln_debug_log() { return ''; }
 function tln_backtrace( $offset = 0, $length = null ) { return ''; }
+function tln_print_r( $var ) { return ''; }
+function tln_print_r_limit_cb( $str ) { return ''; }
 function tln_dump( $var, $format = false ) { return ''; }
 function tln_bin2hex( $var ) { return ''; }
+function tln_format_bytes( $bytes, $precision = 2 ) { return ''; }
 
 endif;

@@ -1,20 +1,20 @@
 <?php
-
 /**
- * Test user filters
+ * Test user filters.
  *
  * @group tln
  * @group tln_user
  */
-class Tests_TLN_Normalizer_User extends WP_UnitTestCase {
+class Tests_TLN_User extends WP_UnitTestCase {
 
 	static $normalizer_state = array();
 
 	public static function wpSetUpBeforeClass() {
 		global $tlnormalizer;
-		self::$normalizer_state = array( $tlnormalizer->dont_js, $tlnormalizer->dont_filter );
+		self::$normalizer_state = array( $tlnormalizer->dont_js, $tlnormalizer->dont_filter, $tlnormalizer->no_normalizer );
 		$tlnormalizer->dont_js = true;
 		$tlnormalizer->dont_filter = false;
+		$tlnormalizer->no_normalizer = true;
 
 		global $pagenow;
 		$pagenow = 'user.php';
@@ -23,11 +23,11 @@ class Tests_TLN_Normalizer_User extends WP_UnitTestCase {
 
 	public static function wpTearDownAfterClass() {
 		global $tlnormalizer;
-		list( $tlnormalizer->dont_js, $tlnormalizer->dont_filter ) = self::$normalizer_state;
+		list( $tlnormalizer->dont_js, $tlnormalizer->dont_filter, $tlnormalizer->no_normalizer ) = self::$normalizer_state;
 	}
 
     /**
-     * @covers TLNormalizer::init
+	 * @ticket tln_user_user
      */
 	function test_user() {
 		$this->assertTrue( is_admin() ) ;
@@ -35,7 +35,7 @@ class Tests_TLN_Normalizer_User extends WP_UnitTestCase {
 		do_action( 'init' );
 
 		global $tlnormalizer;
-		$this->assertTrue( $tlnormalizer->added_filters['user'] );
+		$this->assertArrayHasKey( 'user', $tlnormalizer->added_filters );
 
 		$decomposed_str = "u\xCC\x88"; // u umlaut.
 
@@ -48,19 +48,42 @@ class Tests_TLN_Normalizer_User extends WP_UnitTestCase {
 		$_POST['nickname'] = 'nickname1' . $decomposed_str;
 		$_POST['display_name'] = 'display_name1' . $decomposed_str;
 		$_POST['pass1'] = $_POST['pass2'] = 'password' . $decomposed_str;
+		$_POST['aim'] = 'AIM' . $decomposed_str;
 
-		$user_id = edit_user();
+		add_filter( 'user_contactmethods', array( $this, 'user_contactmethods_filter' ), 10, 2 );
 
-		$this->assertInternalType( 'int', $user_id );
+		$id = edit_user();
 
-		$user = get_user_by( 'ID', $user_id );
+		$this->assertInternalType( 'int', $id );
+
+		$user = get_user_by( 'ID', $id );
 
 		$this->assertInstanceOf( 'WP_User', $user );
-		$this->assertEquals( Normalizer::normalize( $_POST['first_name'] ), $user->first_name );
-		$this->assertEquals( Normalizer::normalize( $_POST['last_name'] ), $user->last_name );
-		$this->assertEquals( Normalizer::normalize( $_POST['nickname'] ), $user->nickname );
-		$this->assertEquals( Normalizer::normalize( $_POST['display_name'] ), $user->display_name );
+		$this->assertSame( TLN_Normalizer::normalize( $_POST['first_name'] ), $user->first_name );
+		if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $_POST['first_name'] ), $user->first_name );
+		$this->assertSame( TLN_Normalizer::normalize( $_POST['last_name'] ), $user->last_name );
+		if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $_POST['last_name'] ), $user->last_name );
+		$this->assertSame( TLN_Normalizer::normalize( $_POST['nickname'] ), $user->nickname );
+		if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $_POST['nickname'] ), $user->nickname );
+		$this->assertSame( TLN_Normalizer::normalize( $_POST['display_name'] ), $user->display_name );
+		if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $_POST['display_name'] ), $user->display_name );
 		$this->assertTrue( wp_check_password( $_POST['pass1'], $user->user_pass ) ); // Not normalized.
-		$this->assertFalse( wp_check_password( Normalizer::normalize( $_POST['pass1'] ), $user->user_pass ) ); // Not normalized.
+		$this->assertFalse( wp_check_password( TLN_Normalizer::normalize( $_POST['pass1'] ), $user->user_pass ) ); // Not normalized.
+		if ( class_exists( 'Normalizer' ) ) $this->assertFalse( wp_check_password( Normalizer::normalize( $_POST['pass1'] ), $user->user_pass ) ); // Not normalized.
+
+		$out = get_user_meta( $id, 'nickname', true );
+
+		$this->assertSame( TLN_Normalizer::normalize( $_POST['nickname'] ), $out );
+		if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $_POST['nickname'] ), $out );
+
+		$out = get_user_meta( $id, 'aim', true );
+
+		$this->assertSame( TLN_Normalizer::normalize( $_POST['aim'] ), $out );
+		if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $_POST['aim'] ), $out );
+	}
+
+	function user_contactmethods_filter( $methods, $user = null ) {
+		$methods['aim'] = __( 'AIM' );
+		return $methods;
 	}
 }

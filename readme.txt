@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: Unicode, Normalization, Form C, Unicode Normalization Form C, Normalize, Normalizer
 Requires at least: 1.5.2
 Tested up to: 4.5
-Stable tag: 2.0.3
+Stable tag: 2.0.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -47,6 +47,14 @@ Sorry, but I don't have a clue. Maybe just a little bit.
 3. Error message from W3C
 
 == Changelog ==
+
+= 2.0.4 =
+* Fix some bugs in Symfony Normalizer and upgrade to UCD 8.0.0 conformance (replaces supplied "combiningClass.php" with generated one).
+* Just use single-byte PCRE regexs.
+* Make isNormalized() do full check by falling back to doing full normalize(), caching result.
+* Improve NFC subset regex check, using generated alternatives.
+* Cater for mbstring overload.
+* Add (a lot) more PHP unit tests.
 
 = 2.0.3 =
 * Add (a lot) more filters.

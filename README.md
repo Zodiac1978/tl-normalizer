@@ -24,6 +24,14 @@ If you don’t know how to install a plugin for WordPress, [here’s how](http:/
 
 ## Changelog
 
+### 2.0.4
+* Fix some bugs in Symfony Normalizer and upgrade to UCD 8.0.0 conformance (replaces supplied "combiningClass.php" with generated one).
+* Just use single-byte PCRE regexs.
+* Make isNormalized() do full check by falling back to doing full normalize(), caching result.
+* Improve NFC subset regex check, using generated alternatives.
+* Cater for mbstring overload.
+* Add (a lot) more PHP unit tests.
+
 ### 2.0.3
 * Add (a lot) more filters.
 * Update to latest version of Symfony Normalizer (uses ".php" files instead of ".ser" files for data for optimization reasons).

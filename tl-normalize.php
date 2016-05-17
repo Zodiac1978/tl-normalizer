@@ -3,7 +3,7 @@
  * Plugin Name: Normalizer
  * Plugin URI: https://github.com/Zodiac1978/tl-normalizer
  * Description: Normalizes content, excerpt, title and comment content to Normalization Form C.
- * Version: 2.0.3
+ * Version: 2.0.4
  * Author: Torsten Landsiedel
  * Author URI: http://torstenlandsiedel.de
  * License: GPLv2
@@ -41,7 +41,7 @@ class TLNormalizer {
 
 	// Trying to choose the earliest filter available, in 'db' context, so other filters can assume normalized input.
 	var $post_filters = array(
-		'pre_post_author', 'pre_post_content', 'pre_post_title', 'pre_post_excerpt', /*'pre_post_password',*/ 'pre_post_name', // 'pre_post_meta' dealt with separately.
+		'pre_post_content', 'pre_post_title', 'pre_post_excerpt', /*'pre_post_password',*/ 'pre_post_name', 'pre_post_meta_input',
 	);
 
 	var $comment_filters = array(
@@ -87,17 +87,16 @@ class TLNormalizer {
 
 	var $widget_filters = array(); // Uses 'widget_update_callback' filter.
 
+	var $permalink_filters = array( 'sanitize_title' );
+
 	var $customize_filters = array(); // None for initial 'customize' preview. For 'customize_save' uses options, settings, menus & widget filters.
 
 	// These are set on 'init' action.
 	var $base = ''; // Simplified $pagenow.
 	var $added_filters = array(); // Array of whether filters added or not per base.
 
-	// Set in load_tln_normalizer-class(). Whether using UTF-8 or single-byte PCRE mode.
-	var $using_pcre_utf8 = false;
-
 	// For testing/debugging.
-	var $dont_js = false, $dont_paste = false, $dont_filter = false, $no_normalizer = false, $no_pcre_utf8 = false;
+	var $dont_js = true, $dont_paste = false, $dont_filter = false, $no_normalizer = true;
 
 	/**
 	 * Check system compatibility, add 'init' action.
@@ -152,7 +151,7 @@ class TLNormalizer {
 	 */
 	function disabled_notice() {
 		$error_message  = '<div id="message" class="updated notice is-dismissible">';
-		$error_message .= '<p><strong>' . __( 'Plugin deactivated!' ) . '</strong> ';
+		$error_message .= '<p><strong>' . __( 'Plugin deactivated!', 'normalizer' ) . '</strong> ';
 		$error_message .= esc_html__( 'Can\'t happen.', 'normalizer' );
 		$error_message .= '</p></div>';
 		echo $error_message;
@@ -171,8 +170,7 @@ class TLNormalizer {
 	 * Called on 'init' action.
 	 */
 	function init() {
-		tln_debug_log( "dont_js=", $this->dont_js, "dont_paste=", $this->dont_paste, ", dont_filter=", $this->dont_filter );
-		tln_debug_log( "no_normalizer=", $this->no_normalizer, ", no_pcre_utf8=", $this->no_pcre_utf8 );
+		tln_debug_log( "dont_js=", $this->dont_js, ", dont_paste=", $this->dont_paste, ", dont_filter=", $this->dont_filter, ", no_normalizer=", $this->no_normalizer );
 
 		// Only add filters on admin.
 		if ( ! $this->dont_filter && is_admin() ) {
@@ -188,15 +186,28 @@ class TLNormalizer {
 					add_filter( $filter, array( $this, 'tl_normalizer' ), $this->priority );
 				}
 
-				// Meta data needs its own filter as has its own id => key/value array format.
+				// Meta data needs its own filter as has its own meta_id => key/value array format.
+
+				// Called on sanitize_post() in wp_insert_post().
 				add_filter( 'pre_post_meta', array( $this, 'pre_post_meta' ), $this->priority ); // Seems to be no-op but leave it in for the mo.
-				// However, the result of the above is not actually used to update the meta, at least on standard posts,
-				// so add individual filters based on the raw $_POST, which are needed anyway if doing ajax.
+
+				// However, the result of the above is not actually used to update the meta it seems,
+				// so add individual filters based on the 'meta' field of $_POST, which is used when updating existing meta data.
 				if ( ! empty( $_POST['meta'] ) && is_array( $_POST['meta'] ) ) {
 					$this->add_sanitize_metas( $_POST['meta'] );
 				}
 
-				// For tags (post metabox). Has own id/term array format.
+				// New meta data (add new custom field metabox) uses 'metakeyselect'/'metakeyinput' and 'metavalue' fields of $_POST.
+				if ( isset( $_POST['metavalue'] ) && '' !== $_POST['metavalue'] ) {
+					$metakey = ! empty( $_POST['metakeyselect'] ) && '#NONE#' !== $_POST['metakeyselect'] ? $_POST['metakeyselect']
+									: ( ! empty( $_POST['metakeyinput'] ) ? $_POST['metakeyinput'] : '' );
+					if ( '' !== $metakey ) {
+						// Put into (no id) => key/value array format.
+						$this->add_sanitize_metas( array( array( 'key' => $metakey, 'value' => $_POST['metavalue'] ) ) );
+					}
+				}
+
+				// For tags (post metabox). Has its own id/term array format.
 				add_filter( 'pre_post_tax_input', array( $this, 'pre_post_tax_input' ), $this->priority );
 
 				// For special image alt meta.
@@ -213,8 +224,8 @@ class TLNormalizer {
 					add_filter( $filter, array( $this, 'tl_normalizer' ), $this->priority );
 				}
 
-				// Add comment meta filters.
-				add_filter( 'preprocess_comment', array( $this, 'preprocess_comment' ), $this->priority );
+				// Comment meta seems to be just internal '_wp_XXX' data.
+				// add_filter( 'preprocess_comment', array( $this, 'preprocess_comment' ), $this->priority );
 			}
 
 			// Users.
@@ -279,10 +290,19 @@ class TLNormalizer {
 			if ( 'widget' === $this->base || 'customize_save' === $this->base ) {
 				$this->added_filters['widget'] = true;
 
-				foreach( $this->widget_filters as $filter ) {
-					add_filter( $filter, array( $this, 'tl_normalizer' ), $this->priority );
+				foreach( $this->widget_filters as $filter ) { // No-op.
+					add_filter( $filter, array( $this, 'tl_normalizer' ), $this->priority ); // @codeCoverageIgnore
 				}
 				add_filter( 'widget_update_callback', array( $this, 'widget_update_callback' ), $this->priority, 4 );
+			}
+
+			// Permalink (ajax).
+			if ( 'permalink' === $this->base || 'customize_save' === $this->base ) {
+				$this->added_filters['permalink'] = true;
+
+				foreach( $this->permalink_filters as $filter ) {
+					add_filter( $filter, array( $this, 'tl_normalizer' ), $this->priority );
+				}
 			}
 
 			// Customizer.
@@ -290,7 +310,7 @@ class TLNormalizer {
 				// $this->added_filters['customize'] = true; // Nothing at the mo.
 
 				foreach( $this->customize_filters as $filter ) { // No-op.
-					add_filter( $filter, array( $this, 'tl_normalizer' ), $this->priority );
+					add_filter( $filter, array( $this, 'tl_normalizer' ), $this->priority ); // @codeCoverageIgnore
 				}
 			}
 
@@ -300,7 +320,7 @@ class TLNormalizer {
 			$extra_filters = array();
 			$extra_filters = apply_filters( 'tln_extra_filters', $extra_filters );
 			if ( $extra_filters ) {
-				$this->added_filters['extra'] = true;
+				$this->added_filters['extra_filters'] = true;
 
 				foreach( $extra_filters as $filter ) {
 					add_filter( $filter, array( $this, 'tl_normalizer' ), $this->priority );
@@ -315,17 +335,18 @@ class TLNormalizer {
 			}
 		}
 
-		tln_debug_log("base=", $this->base, ", added_filters=", $this->added_filters );
-
 		if ( ! $this->dont_js ) {
 			if ( is_admin() ) {
 				if ( ! ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
 					add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 				}
 			} else {
+				tln_debug_log( "add action wp_enqueue_scripts" );
 				add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 			}
 		}
+
+		tln_debug_log("base=", $this->base, ", added_filters=", $this->added_filters );
 	}
 
 	/**
@@ -346,6 +367,8 @@ class TLNormalizer {
 						if ( false !== $normalized ) { // Not validating so don't set on error.
 							$content = $normalized;
 						}
+					} else {
+						tln_debug_log("no_normalizer is_normalized content=" . bin2hex( $content ) );
 					}
 				} else {
 					if ( ! normalizer_is_normalized( $content ) ) {
@@ -356,11 +379,17 @@ class TLNormalizer {
 						if ( false !== $normalized ) { // Not validating so don't set on error.
 							$content = $normalized;
 						}
+					} else {
+						tln_debug_log("normalizer is_normalized content=" . bin2hex( $content ) );
 					}
 				}
 
 			} elseif ( is_array( $content ) ) { // Allow for arrays.
-				return $this->normalize_arr_recurse( $content );
+				foreach ( $content as $key => $value ) {
+					if ( ! empty( $value ) && ( is_string( $value ) || is_array( $value ) ) ) {
+						$content[ $key ] = $this->tl_normalizer( $value ); // Recurse.
+					}
+				}
 			}
 		}
 
@@ -372,10 +401,35 @@ class TLNormalizer {
 	 */
 	function load_tln_normalizer_class() {
 
-		// Load the Symfony polyfill https://github.com/symfony/polyfill/tree/master/src/Intl/Normalizer
-		require dirname( __FILE__ ) . '/Symfony/Normalizer.php';
+		$dirname = dirname( __FILE__ );
 
-		$this->using_pcre_utf8 = $tln_using_pcre_utf8; // Global defined in Normalizer.php.
+		// Load the Symfony polyfill https://github.com/symfony/polyfill/tree/master/src/Intl/Normalizer
+		require $dirname . '/Symfony/Normalizer.php';
+
+		if ( ! function_exists( 'normalizer_is_normalized' ) ) {
+
+			function normalizer_is_normalized( $s, $form = TLN_Normalizer::NFC ) {
+				return TLN_Normalizer::isNormalized( $s, $form );
+			}
+
+			function normalizer_normalize( $s, $form = TLN_Normalizer::NFC ) {
+				return TLN_Normalizer::normalize( $s, $form );
+			}
+		}
+
+		if ( $this->no_normalizer ) { // For testing when have PHP Normalizer.
+
+			if ( ! function_exists( 'tl_normalizer_is_normalized' ) ) {
+
+				function tl_normalizer_is_normalized( $s, $form = TLN_Normalizer::NFC ) {
+					return TLN_Normalizer::isNormalized( $s, $form );
+				}
+
+				function tl_normalizer_normalize( $s, $form = TLN_Normalizer::NFC ) {
+					return TLN_Normalizer::normalize( $s, $form );
+				}
+			}
+		}
 	}
 
 	/**
@@ -388,27 +442,24 @@ class TLNormalizer {
 			// Allow exclusion of keys.
 			$exclude_keys = array_flip( apply_filters( 'tln_exclude_post_meta_keys', array(), $arr, 'pre_post_meta' /*context*/ ) );
 
-			foreach ( $arr as $id => $entry ) {
+			foreach ( $arr as $meta_id => $entry ) {
 				if ( isset( $entry['key'] ) && is_string( $entry['key'] ) && ! empty( $entry['value'] ) ) {
-					$key = $entry['key']; // NOTE: meta keys WON'T be normalized (not sanitized by WP).
-					$value = $entry['value'];
+					$key = wp_unslash( $entry['key'] ); // NOTE: meta keys WON'T be normalized (not sanitized by WP).
+					$value = $entry['value']; // Will be slashed (single/double quote, backslash & nul) but doesn't affect normalization so don't bother unslashing/reslashing.
 
 					if ( '' !== $key && '_' !== $key[0] && ! isset( $exclude_keys[ $key ] ) ) {
-						$arr[ $id ] = array( 'key' => $key, 'value' => $this->tl_normalizer( $value ) );
+						$arr[ $meta_id ] = array( 'key' => $key, 'value' => $this->tl_normalizer( $value ) );
 					}
 				}
 			}
-		} elseif ( is_string( $arr ) ) { // Shouldn't happen.
-			tln_error_log( "Expecting array, given string=", $arr );
-			$arr = $this->tl_normalizer( $arr );
 		}
 
 		return $arr;
 	}
 
 	/**
-	 * Add individual filters for metas, seeing as above doesn't seem to be used. Also only way if doing ajax.
-	 * Note passed in raw $_POST array.
+	 * Add individual filters for metas. Also fallback for above, seeing as it doesn't seem to do anything.
+	 * Note passed in raw $_POST array, same meta_id (if available) => key/value format as above.
 	 */
 	function add_sanitize_metas( $arr ) {
 
@@ -460,28 +511,6 @@ class TLNormalizer {
 		}
 
 		return $arr;
-	}
-
-	/**
-	 * Called on 'preprocess_comment' filter.
-	 * Add comment meta filters.
-	 */
-	function preprocess_comment( $commentdata ) {
-		if ( isset( $commentdata['comment_meta'] ) && is_array( $commentdata['comment_meta'] ) ) {
-
-			// Allow exclusion of keys.
-			$exclude_keys = array_flip( apply_filters( 'tln_exclude_comment_meta_keys', array(), $commentdata['comment_meta'], $commentdata ) );
-
-			foreach ( $commentdata['comment_meta'] as $field => $value ) {
-				$field = wp_unslash( $field );
-				if ( ! empty( $value ) && '' !== $field && '_' !== $field[0] && ! isset( $exclude_keys[ $field ] ) ) {
-					// Probably best/easiest to use the sanitize filters, rather than normalize directly.
-					add_filter( "sanitize_comment_meta_$field", array( $this, 'sanitize_meta' ), $this->priority, 3 );
-				}
-			}
-		}
-
-		return $commentdata;
 	}
 
 	/**
@@ -556,24 +585,6 @@ class TLNormalizer {
 	}
 
 	/**
-	 * Normalize an array recursively.
-	 */
-	function normalize_arr_recurse( $arr ) {
-
-		foreach ( $arr as $key => $value ) {
-			if ( ! empty( $value ) ) {
-				if ( is_string( $value ) ) {
-					$arr[ $key ] = $this->tl_normalizer( $value );
-				} elseif ( is_array( $value ) ) {
-					$arr[ $key ] = $this->normalize_arr_recurse( $value );
-				}
-			}
-		}
-
-		return $arr;
-	}
-
-	/**
 	 * Called on 'sanitize_{$meta_type}_meta_{$meta_key}' filter.
 	 * Just a passthru to tl_normalizer() for the mo.
 	 */
@@ -586,7 +597,7 @@ class TLNormalizer {
 	 */
 	function enqueue_scripts() {
 		$suffix = ''; // defined( "SCRIPT_DEBUG" ) && SCRIPT_DEBUG ? '' : '.min'; // Don't bother with minifieds for the mo.
-		$rangyinputs_suffix = '-src'; // defined( "SCRIPT_DEBUG" ) && SCRIPT_DEBUG ? '-src' : ''; // Don't bother with minifieds for the mo.
+		$rangyinputs_suffix = defined( "SCRIPT_DEBUG" ) && SCRIPT_DEBUG ? '-src' : '';
 
 		// Load the javascript normalize polyfill https://github.com/walling/unorm
 		wp_enqueue_script( 'tln-unorm', plugins_url( "unorm/lib/unorm{$suffix}.js", __FILE__ ), array(), '1.0.0' );
@@ -639,10 +650,10 @@ var tl_normalize = tl_normalize || {}; // Our namespace.
 		} );
 	};
 
+<?php if ( defined( "SCRIPT_DEBUG" ) && SCRIPT_DEBUG ) : ?>
 	/**
 	 * Debug helper - dump before and after.
 	 */
-<?php if ( defined( "SCRIPT_DEBUG" ) && SCRIPT_DEBUG ) : ?>
 	tl_normalize.dmp_before_and_after = function ( before, after ) {
 		if ( console && console.log ) {
 			var i, before_dmp = '', after_dmp = '';
@@ -748,7 +759,7 @@ var tl_normalize = tl_normalize || {}; // Our namespace.
 
 		if ( 'admin-ajax' === $base && ! empty( $_REQUEST['action'] ) ) {
 			$base = $_REQUEST['action'];
-			if ( 'inline-' === substr( $base, 0, 7 ) ) {
+			if ( 'inline-' === substr( $base, 0, 7 ) || 'sample-' === substr( $base, 0, 7 ) ) {
 				$base = substr( $base, 7 );
 			}
 			if ( 'replyto-' === substr( $base, 0, 8 ) ) {

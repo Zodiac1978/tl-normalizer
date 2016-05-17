@@ -1,8 +1,5 @@
 <?php
 
-// Exit if accessed directly. // gitlost
-if ( ! defined( 'ABSPATH' ) ) exit; // gitlost
-
 /*
  * This file is part of the Symfony package.
  *
@@ -12,8 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) exit; // gitlost
  * file that was distributed with this source code.
  */
 
-// gitlost removed namespace stuff, renamed to TLN_Normalizer to avoid conflicts, appended bootstrap, allowed to be included more than once.
-// gitlost substituted tln_is_valid_utf8()/tln_is_subset_NFC() for PCRE UTF-8 mode tests.
+// gitlost removed namespace stuff, renamed to TLN_Normalizer to avoid conflicts, allowed to be included more than once.
+// gitlost subbed tln_is_valid_utf8()/tln_in_XXX() for PCRE UTF-8 mode tests, added full isNormalized() check by falling back to normalize(), made mb_overload_string safe.
 // https://github.com/symfony/polyfill/tree/master/src/Intl/Normalizer
 
 // namespace Symfony\Polyfill\Intl\Normalizer; // gitlost
@@ -21,15 +18,14 @@ if ( ! defined( 'ABSPATH' ) ) exit; // gitlost
 /**
  * Normalizer is a PHP fallback implementation of the Normalizer class provided by the intl extension.
  *
- * It has been validated with Unicode 6.3 Normalization Conformance Test.
+ * It has been validated with Unicode 8.0.0 Normalization Conformance Test. // gitlost
  * See http://www.unicode.org/reports/tr15/ for detailed info about Unicode normalizations.
  *
  * @author Nicolas Grekas <p@tchwork.com>
  *
  * @internal
  */
-if ( ! class_exists( 'TLN_Normalizer' ) ) : // Allow file to be included more than once (for testing) // gitlost
-class TLN_Normalizer // gitlost
+if ( ! class_exists( 'TLN_Normalizer' ) ) : class TLN_Normalizer // Allow file to be included more than once (for testing) // gitlost
 {
     const NONE = 1;
     const FORM_D = 2;
@@ -47,27 +43,53 @@ class TLN_Normalizer // gitlost
     private static $cC;
     private static $ulenMask = array("\xC0" => 2, "\xD0" => 2, "\xE0" => 3, "\xF0" => 4);
     private static $ASCII = "\x20\x65\x69\x61\x73\x6E\x74\x72\x6F\x6C\x75\x64\x5D\x5B\x63\x6D\x70\x27\x0A\x67\x7C\x68\x76\x2E\x66\x62\x2C\x3A\x3D\x2D\x71\x31\x30\x43\x32\x2A\x79\x78\x29\x28\x4C\x39\x41\x53\x2F\x50\x22\x45\x6A\x4D\x49\x6B\x33\x3E\x35\x54\x3C\x44\x34\x7D\x42\x7B\x38\x46\x77\x52\x36\x37\x55\x47\x4E\x3B\x4A\x7A\x56\x23\x48\x4F\x57\x5F\x26\x21\x4B\x3F\x58\x51\x25\x59\x5C\x09\x5A\x2B\x7E\x5E\x24\x40\x60\x7F\x00\x01\x02\x03\x04\x05\x06\x07\x08\x0B\x0C\x0D\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F";
+	private static $s, $form, $normalize; // gitlost Cache of call to normalize() in isNormalized().
+	private static $mb_overload_string; // gitlost 
 
+	// gitlost begin
     public static function isNormalized($s, $form = self::NFC)
     {
-        if (strspn($s .= '', self::$ASCII) === strlen($s)) {
-            return true;
-        }
-        if (self::NFC === $form && tln_is_valid_utf8($s) && tln_is_subset_NFC($s)) { // gitlost if (self::NFC === $form && preg_match('//u', $s) && !preg_match('/[^\x00-\x{2FF}]/u', $s)) {
+		if ($form <= self::NONE || $form > self::FORM_KC) { // Note fails if given NONE.
+			return false;
+		}
+
+		// Check for multibyte string function overload.
+		if (null === self::$mb_overload_string) {
+			self::$mb_overload_string = defined( 'MB_OVERLOAD_STRING' ) && ( ini_get( 'mbstring.func_overload' ) & MB_OVERLOAD_STRING ); // MB_OVERLOAD_STRING defined by mbstring extension.
+		}
+        if (strspn($s .= '', self::$ASCII) === (self::$mb_overload_string ? mb_strlen($s, '8bit') : strlen($s))) {
             return true;
         }
 
-        return false; // Pretend false as quick checks implementented in PHP won't be so quick
+        if (self::NFC === $form) { // if (self::NFC === $form && preg_match('//u', $s) && !preg_match('/[^\x00-\x{2FF}]/u', $s)) {
+			if (!tln_is_valid_utf8($s)) {
+				return false;
+			}
+			if (tln_in_nfc_noes($s)) { // If contains characters that can never be in a NFC normalized string.
+				return false;
+			}
+			if (!tln_in_nfc_maybes_or_reorders($s)) { // If doesn't have any characters that might be recomposed for NFC or reordered.
+				return true;
+			}
+		}
+
+		$normalize = self::normalize($s, $form); // Give true answer by doing full normalize check.
+		$result = ($s === $normalize);
+
+		if ($result) {
+			self::$s = self::$form = self::$normalize = null; // Clear cache.
+		} else {
+			self::$s = $s; self::$form = $form; self::$normalize = $normalize; // Cache for immediate use in normalize().
+		}
+
+        return $result;
     }
+	// gitlost end
 
     public static function normalize($s, $form = self::NFC)
     {
-        if (!tln_is_valid_utf8($s .= '')) { // gitlost if (!preg_match('//u', $s .= '')) {
-            return false;
-        }
-
         switch ($form) {
-            case self::NONE: return $s;
+            case self::NONE: return tln_is_valid_utf8($s .= '') ? $s : false;
             case self::NFC: $C = true; $K = false; break;
             case self::NFD: $C = false; $K = false; break;
             case self::NFKC: $C = true; $K = true; break;
@@ -75,9 +97,30 @@ class TLN_Normalizer // gitlost
             default: return false;
         }
 
+		// gitlost begin
+		if (null !== self::$normalize && $s === self::$s && $form === self::$form) { //  Use cache if available.
+			$result = self::$normalize;
+			self::$s = self::$form = self::$normalize = null; // Clear cache (try to keep memory usage to a min).
+			return $result;
+		}
+
+        if (!tln_is_valid_utf8($s .= '')) { // if (!preg_match('//u', $s .= '')) {
+            return false;
+        }
+
         if ('' === $s) {
             return '';
         }
+
+		if (null === self::$mb_overload_string) {
+			self::$mb_overload_string = defined( 'MB_OVERLOAD_STRING' ) && ( ini_get( 'mbstring.func_overload' ) & MB_OVERLOAD_STRING );
+		}
+		static $mb_internal_encoding;
+		if (self::$mb_overload_string) { 
+			$mb_internal_encoding = mb_internal_encoding(); // Save existing encoding.
+			mb_internal_encoding('8bit');
+		}
+		// gitlost end
 
         if ($K && null === self::$KD) {
             self::$KD = self::getData('compatibilityDecomposition');
@@ -93,10 +136,18 @@ class TLN_Normalizer // gitlost
                 self::$C = self::getData('canonicalComposition');
             }
 
-            return self::recompose(self::decompose($s, $K));
-        }
+            $result = self::recompose(self::decompose($s, $K)); // gitlost
+        } else { // gitlost
+			$result = self::decompose($s, $K); // gitlost
+		}
 
-        return self::decompose($s, $K);
+		// gitlost begin
+		if (self::$mb_overload_string) {
+			mb_internal_encoding($mb_internal_encoding); // Restore encoding.
+		}
+
+		return $result;
+		// gitlost end
     }
 
     private static function recompose($s)
@@ -130,6 +181,7 @@ class TLN_Normalizer // gitlost
 
                 $result .= $lastUchr;
                 $lastUchr = $s[$i];
+				$lastUcls = 0; // gitlost Reset on starter.
                 ++$i;
                 continue;
             }
@@ -182,15 +234,16 @@ class TLN_Normalizer // gitlost
         return $result.$lastUchr.$tail;
     }
 
-    private static function decompose($s, $c)
+    private static function decompose($s, $k) // gitlost $c => $k need to remember arg if recursing.
     {
         $result = '';
+		$recurse = false; // gitlost
 
         $ASCII = self::$ASCII;
         $decompMap = self::$D;
         $combClass = self::$cC;
         $ulenMask = self::$ulenMask;
-        if ($c) {
+        if ($k) { // gitlost
             $compatMap = self::$KD;
         }
 
@@ -204,7 +257,13 @@ class TLN_Normalizer // gitlost
 
                 if ($c) {
                     ksort($c);
-                    $result .= implode('', $c);
+					// gitlost begin
+					$c = implode('', $c);
+					if (!$recurse && isset($combClass[$c])) {
+						$recurse = true;
+					}
+                    $result .= $c;
+					// gitlost end
                     $c = array();
                 }
 
@@ -225,11 +284,18 @@ class TLN_Normalizer // gitlost
                     $c[$combClass[$uchr]] = '';
                 }
                 $c[$combClass[$uchr]] .= isset($compatMap[$uchr]) ? $compatMap[$uchr] : (isset($decompMap[$uchr]) ? $decompMap[$uchr] : $uchr);
+				$lastReorder = $combClass[$uchr];
                 continue;
             }
             if ($c) {
                 ksort($c);
-                $result .= implode('', $c);
+				// gitlost begin
+				$c = implode('', $c);
+				if (!$recurse && isset($combClass[$c])) {
+					$recurse = true;
+				}
+				$result .= $c;
+				// gitlost end
                 $c = array();
             }
             if ($uchr < "\xEA\xB0\x80" || "\xED\x9E\xA3" < $uchr) {
@@ -283,100 +349,55 @@ class TLN_Normalizer // gitlost
 
         if ($c) {
             ksort($c);
-            $result .= implode('', $c);
+			// gitlost begin
+			$c = implode('', $c);
+			if (!$recurse && isset($combClass[$c])) {
+				$recurse = true;
+			}
+			$result .= $c;
+			// gitlost end
         }
 
+		if ($recurse && $result !== $s) { // gitlost Hack to cater for reordering of the reordered (without recursing infinitely). Probably incorrect.
+			$result = self::decompose($result, $k); // gitlost
+		} // gitlost
         return $result;
     }
 
     private static function getData($file)
     {
+		return require dirname( __FILE__ ).'/Resources/unidata/'.$file.'.php'; // gitlost (__DIR__ is 5.3.0)
+		/* gitlost
         if (file_exists($file = __DIR__.'/Resources/unidata/'.$file.'.php')) {
             return require $file;
         }
 
         return false;
+		gitlost */
     }
-}
-endif; // gitlost
-
-// symfony/polyfill/src/Intl/Normalizer/bootstrap.php // gitlost
-
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-//use Symfony\Polyfill\Intl\Normalizer as p; // gitlost
-if (!function_exists('normalizer_is_normalized')) {
-    function normalizer_is_normalized($s, $form = /*p\*/TLN_Normalizer::NFC) { return /*p\*/TLN_Normalizer::isNormalized($s, $form); } // gitlost
-    function normalizer_normalize($s, $form = /*p\*/TLN_Normalizer::NFC) { return /*p\*/TLN_Normalizer::normalize($s, $form); } // gitlost
-}
-
+} endif; // gitlost
 // gitlost begin
-if ( $this->no_normalizer ) { // For testing when have PHP Normalizer.
-	if ( ! function_exists( 'tl_normalizer_is_normalized' ) ) {
-		function tl_normalizer_is_normalized($s, $form = /*p\*/TLN_Normalizer::NFC) { return /*p\*/TLN_Normalizer::isNormalized($s, $form); }
-		function tl_normalizer_normalize($s, $form = /*p\*/TLN_Normalizer::NFC) { return /*p\*/TLN_Normalizer::normalize($s, $form); }
-	}
-}
-
-global $tln_using_pcre_utf8;
-// If the version of PCRE is that which came with PHP before 5.3.4 (when 5 and 6 octet sequences were allowed) or if it isn't compiled with UTF-8 support...
-$tln_using_pcre_utf8 = ! ( $this->no_pcre_utf8 || version_compare( PHP_VERSION, '5.3.4', '<' ) || false === preg_match( '//u', '' ) );
-
 if ( ! function_exists( 'tln_is_valid_utf8' ) ) {
+
 	// To avoid a PCRE dependency, the Symfony Normalizer polyfill has been modified to call tln_is_valid_utf8() instead of using preg_match() directly.
 	function tln_is_valid_utf8( $string ) {
-		global $tln_using_pcre_utf8;
 
-		if ( $tln_using_pcre_utf8 ) {
-			return preg_match( '//u', $string ); // Original Normalizer validity check.
-		}
-
-		// Taken from wpdb::strip_invalid_text() in "wp-includes/wp-db.php".
-		// See also https://www.w3.org/International/questions/qa-forms-utf-8
-		$utf8_regex = '/
-			(
-				(?: [\x00-\x7F]                  # single-byte sequences   0xxxxxxx
-				|   [\xC2-\xDF][\x80-\xBF]       # double-byte sequences   110xxxxx 10xxxxxx
-				|   \xE0[\xA0-\xBF][\x80-\xBF]   # triple-byte sequences   1110xxxx 10xxxxxx * 2
-				|   [\xE1-\xEC][\x80-\xBF]{2}
-				|   \xED[\x80-\x9F][\x80-\xBF]
-				|   [\xEE-\xEF][\x80-\xBF]{2}
-				|   \xF0[\x90-\xBF][\x80-\xBF]{2} # four-byte sequences   11110xxx 10xxxxxx * 3
-				|   [\xF1-\xF3][\x80-\xBF]{3}
-				|   \xF4[\x80-\x8F][\x80-\xBF]{2}
-				){1,40}                          # ...one or more times
-			)
-			| .                                  # anything else
-			/x';
-
-		return $string === preg_replace( $utf8_regex, '$1', $string );
+		// See https://www.w3.org/International/questions/qa-forms-utf-8
+		return 1 === preg_match(
+			'/\A(?:
+			  [\x00-\x7f]                                     # ASCII
+			| [\xc2-\xdf][\x80-\xbf]                          # non-overlong 2-byte
+			| \xe0[\xa0-\xbf][\x80-\xbf]                      # excluding overlongs
+			| [\xe1-\xec\xee\xef][\x80-\xbf][\x80-\xbf]       # straight 3-byte
+			| \xed[\x80-\x9f][\x80-\xbf]                      # excluding surrogates
+			| \xf0[\x90-\xbf][\x80-\xbf][\x80-\xbf]           # planes 1-3
+			| [\xf1-\xf3][\x80-\xbf][\x80-\xbf][\x80-\xbf]    # planes 4-15
+			| \xf4[\x80-\x8f][\x80-\xbf][\x80-\xbf]           # plane 16
+			)*+\z/x',
+			$string
+		);
 	}
 
-	// To avoid a PCRE dependency, the Symfony Normalizer polyfill has been modified to call tln_is_subset_NFC() instead of using preg_match() directly.
-	function tln_is_subset_NFC( $string ) {
-		global $tln_using_pcre_utf8;
-
-		if ( $tln_using_pcre_utf8 ) {
-			return ! preg_match( '/[^\x00-\x{2FF}]/u', $string ); // Original Normalizer rough NFC normalized check. Will give false negatives. Perhaps TODO: make more accurate.
-		}
-
-		// Rough NFC test. Matches Normalizer [^\x00-\x{2FF}] pattern. Will give false negatives. Perhaps TODO: make more accurate.
-		$subset_nfc_regex = '/
-			(
-				(?: [\x00-\x7F]                  # single-byte sequences   0xxxxxxx
-				|   [\xC2-\xCB][\x80-\xBF]       # double-byte sequences   110xxxxx 10xxxxxx up to U+02FF
-				){1,40}                          # ...one or more times
-			)
-			| .                                  # anything else
-			/x';
-
-		return $string === preg_replace( $subset_nfc_regex, '$1', $string );
-	}
+	require dirname( __FILE__ ) . '/tln_ins.php';
 }
 // gitlost end

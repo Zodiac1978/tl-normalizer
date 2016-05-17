@@ -2,13 +2,32 @@
 	bootstrap="tests/bootstrap.php"
 	backupGlobals="false"
 	colors="true"
-	convertErrorsToExceptions="true"
-	convertNoticesToExceptions="true"
-	convertWarningsToExceptions="true"
+	stderr="true"
 	>
+    <php>
+        <const name="WP_TESTS_MULTISITE" value="1" />
+    </php>
 	<testsuites>
 		<testsuite>
 			<directory prefix="test-" suffix=".php">./tests/</directory>
 		</testsuite>
 	</testsuites>
+	<filter>
+		<whitelist>
+			<directory suffix=".php">./</directory>
+			<exclude>
+				<directory>./Symfony/Resources</directory>
+				<directory>./php-utf8</directory>
+				<directory>./tests</directory>
+				<file>./debug.php</file>
+				<file>./Symfony/Sym_Normalizer.php</file>
+				<file>./tools/gen_combining_class.php</file>
+				<file>./tools/gen_tln_ins.php</file>
+				<file>./tools/list.php</file>
+				<file>./tools/perf_is_valid_utf8.php</file>
+				<file>./tools/perf_normalizer.php</file>
+				<file>./tools/perf_quick_check.php</file>
+			</exclude>
+		</whitelist>
+	</filter>
 </phpunit>

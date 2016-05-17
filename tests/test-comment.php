@@ -1,20 +1,20 @@
 <?php
-
 /**
- * Test comment filters
+ * Test comment filters.
  *
  * @group tln
  * @group tln_comment
  */
-class Tests_TLN_Normalizer_Comment extends WP_UnitTestCase {
+class Tests_TLN_Comment extends WP_UnitTestCase {
 
 	static $normalizer_state = array();
 
 	public static function wpSetUpBeforeClass() {
 		global $tlnormalizer;
-		self::$normalizer_state = array( $tlnormalizer->dont_js, $tlnormalizer->dont_filter );
+		self::$normalizer_state = array( $tlnormalizer->dont_js, $tlnormalizer->dont_filter, $tlnormalizer->no_normalizer );
 		$tlnormalizer->dont_js = true;
 		$tlnormalizer->dont_filter = false;
+		$tlnormalizer->no_normalizer = true;
 
 		global $pagenow;
 		$pagenow = 'comment.php';
@@ -23,11 +23,11 @@ class Tests_TLN_Normalizer_Comment extends WP_UnitTestCase {
 
 	public static function wpTearDownAfterClass() {
 		global $tlnormalizer;
-		list( $tlnormalizer->dont_js, $tlnormalizer->dont_filter ) = self::$normalizer_state;
+		list( $tlnormalizer->dont_js, $tlnormalizer->dont_filter, $tlnormalizer->no_normalizer ) = self::$normalizer_state;
 	}
 
     /**
-     * @covers TLNormalizer::init
+	 * @ticket tln_comment_comment
      */
 	function test_comment() {
 		$this->assertTrue( is_admin() ) ;
@@ -35,7 +35,7 @@ class Tests_TLN_Normalizer_Comment extends WP_UnitTestCase {
 		do_action( 'init' );
 
 		global $tlnormalizer;
-		$this->assertTrue( $tlnormalizer->added_filters['comment'] );
+		$this->assertArrayHasKey( 'comment', $tlnormalizer->added_filters );
 
 		$decomposed_str = "u\xCC\x88"; // u umlaut.
 
@@ -50,6 +50,7 @@ class Tests_TLN_Normalizer_Comment extends WP_UnitTestCase {
 
 		$comment = get_comment( $comment_id );
 		$this->assertInstanceOf( 'WP_Comment', $comment );
-		$this->assertEquals( Normalizer::normalize( $updated_comment_text ), $comment->comment_content );
+		$this->assertEquals( TLN_Normalizer::normalize( $updated_comment_text ), $comment->comment_content );
+		if ( class_exists( 'Normalizer' ) ) $this->assertEquals( Normalizer::normalize( $updated_comment_text ), $comment->comment_content );
 	}
 }

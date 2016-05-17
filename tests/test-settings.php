@@ -1,11 +1,11 @@
 <?php
 /**
- * Test options filters.
+ * Test settings filters.
  *
  * @group tln
- * @group tln_options
+ * @group tln_settings
  */
-class Tests_TLN_Options extends WP_UnitTestCase {
+class Tests_TLN_Settings extends WP_UnitTestCase {
 
 	static $normalizer_state = array();
 
@@ -17,7 +17,7 @@ class Tests_TLN_Options extends WP_UnitTestCase {
 		$tlnormalizer->no_normalizer = true;
 
 		global $pagenow;
-		$pagenow = 'options.php';
+		$pagenow = 'settings.php';
 		set_current_screen( $pagenow );
 	}
 
@@ -27,47 +27,32 @@ class Tests_TLN_Options extends WP_UnitTestCase {
 	}
 
     /**
-	 * @ticket tln_options_options
+	 * @ticket tln_settings_settings
      */
-	function test_options() {
+	function test_settings() {
 		$this->assertTrue( is_admin() ) ;
 
 		do_action( 'init' );
 
 		global $tlnormalizer;
-		$this->assertArrayHasKey( 'options', $tlnormalizer->added_filters );
+		$this->assertArrayHasKey( 'settings', $tlnormalizer->added_filters );
 
 		$decomposed_str = "u\xCC\x88"; // u umlaut.
 
 		$data = array(
 			'blogname' => 'Blogname' . $decomposed_str,
 			'blogdescription' => 'Blogdescription' . $decomposed_str,
+			'site_name' => 'Site name' . $decomposed_str,
+			'welcome_email' => 'Hello' . $decomposed_str,
+			'first_comment' => 'I was just looking at your My Site | Just another WordPress site website and see that your website has the potential to get a lot of visitors' . $decomposed_str,
 		);
 
-		foreach ( $data as $option => $value ) {
-			update_option( $option, $value );
+		foreach ( $data as $setting => $value ) {
+			update_site_option( $setting, $value );
 		}
 
-		foreach ( $data as $option => $value ) {
-			$out = get_option( $option );
-
-			$this->assertSame( TLN_Normalizer::normalize( $value ), $out );
-			if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $value ), $out );
-		}
-
-		$tlnormalizer->do_all_options = false;
-
-		do_action( 'init' );
-
-		$data['blogname'] = 'Blogname2' . $decomposed_str;
-		$data['blogdescription'] = 'Blogdescription2' . $decomposed_str;
-
-		foreach ( $data as $option => $value ) {
-			update_option( $option, $value );
-		}
-
-		foreach ( $data as $option => $value ) {
-			$out = get_option( $option );
+		foreach ( $data as $setting => $value ) {
+			$out = get_site_option( $setting );
 
 			$this->assertSame( TLN_Normalizer::normalize( $value ), $out );
 			if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $value ), $out );
