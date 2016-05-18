@@ -599,8 +599,13 @@ class TLNormalizer {
 		$suffix = ''; // defined( "SCRIPT_DEBUG" ) && SCRIPT_DEBUG ? '' : '.min'; // Don't bother with minifieds for the mo.
 		$rangyinputs_suffix = defined( "SCRIPT_DEBUG" ) && SCRIPT_DEBUG ? '-src' : '';
 
+		// Load IE8 Array.prototype.reduceRight polyfill for unorm.
+		wp_enqueue_script( 'tln-ie8', plugins_url( "js/ie8{$suffix}.js", __FILE__ ), array(), '1.0.0' );
+		wp_script_add_data( 'tln-ie8', 'conditional', 'lt IE 9' );
+
 		// Load the javascript normalize polyfill https://github.com/walling/unorm
-		wp_enqueue_script( 'tln-unorm', plugins_url( "unorm/lib/unorm{$suffix}.js", __FILE__ ), array(), '1.0.0' );
+		wp_enqueue_script( 'tln-unorm', plugins_url( "unorm/lib/unorm{$suffix}.js", __FILE__ ), array( 'tln-ie8' ), '1.4.1' );
+		wp_script_add_data( 'tln-unorm', 'conditional', 'lt IE 9' );
 
 		// Load the getSelection/setSelection jquery plugin https://github.com/timdown/rangyinputs
 		wp_enqueue_script( 'tln-rangyinputs', plugins_url( "rangyinputs/rangyinputs-jquery{$rangyinputs_suffix}.js", __FILE__ ), array( 'jquery' ), '1.2.0' );
