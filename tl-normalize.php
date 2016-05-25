@@ -824,7 +824,7 @@ var tl_normalize = tl_normalize || {}; // Our namespace.
 			$base = substr( $base, 5 );
 		}
 
-		if ( 'attachment' === $base || /*'edit' === $base ||*/ 'media' === $base || 'meta' === $base || 'save' === $base ) {
+		if ( 'attachment' === $base || 'media' === $base || 'meta' === $base || 'save' === $base ) {
 			$base = 'post';
 		}
 
