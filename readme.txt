@@ -50,7 +50,7 @@ Sorry, but I don't have a clue. Maybe just a little bit.
 
 = 2.0.5 =
 * A few more filters (attachment upload, date/time preview).
-* Optimize Normalizer for "if ( ! isNoramlized() ) normalize()" pattern.
+* Optimize Normalizer for "if ( ! isNormalized() ) normalize()" pattern, using direct TLN_REGEX_XXX regular expression defines and preg_replace_callback().
 * More PHP unit tests, stub qunit test.
 
 = 2.0.4 =
