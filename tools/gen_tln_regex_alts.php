@@ -1,6 +1,6 @@
 <?php
 /**
- * Output "tln_ins.php", generating the regular expression alternatives
+ * Output "tln_regexs.php", generating regular expression alternatives defines
  * from the UCD derived normalization properties file "DerivedNormalizationProps.txt"
  * and the derived combining class file "DerivedCombiningClass.txt".
  *
@@ -46,10 +46,15 @@ $idx_strs = array(
 	'nfkc_maybes' => '# NFKC_Quick_Check=Maybe',
 );
 
-// Only bother outputting NFC noes & maybes (with reordereds) for the mo.
+// Only interested in NFC stuff for the mo.
 $out_idxs = array(
 	'nfc_noes',
-	'nfc_maybes_or_reorders',
+	/*
+	'nfc_maybes',
+	'reorders',
+	'nfc_maybes_reorders',
+	*/
+	'nfc_noes_maybes_reorders',
 );
 
 foreach ( $idx_strs as $idx => $str ) {
@@ -180,7 +185,10 @@ foreach ( $lines as $line ) {
 }
 
 // Put maybes and reorders in one regex.
-$codepoints['nfc_maybes_or_reorders'] = array_values( array_unique( array_merge( $codepoints['nfc_maybes'], $codepoints['reorders'] ) ) );
+$codepoints['nfc_maybes_reorders'] = array_values( array_unique( array_merge( $codepoints['nfc_maybes'], $codepoints['reorders'] ) ) );
+// 
+//$hangul_codepoints = array( 0xac00, 0xd7a3 );
+$codepoints['nfc_noes_maybes_reorders'] = array_values( array_unique( array_merge( $codepoints['nfc_noes'], $codepoints['nfc_maybes_reorders'] ) ) );
 
 $regex_alts = array();
 
@@ -243,24 +251,17 @@ $out[] = ' * Quick check NO and MAYBE codepoints, and reordered codepoints.';
 $out[] = ' */';
 
 foreach ( $out_idxs as $idx ) {
+	$IDX = strtoupper( $idx );
 	$out[] = '';
-	$out[] = "if ( ! function_exists( 'tln_in_{$idx}' ) ) {";
-	$out[] = '';
-	$out[] = "\t" . "function tln_in_{$idx}( \$string ) {";
-	$out[] = "\t\t" . 'return 1 === preg_match(';
-	$out[] = "\t\t\t" . '\'/';
-	$out[] = "\t\t\t" . $regex_alts[ $idx ];
-	$out[] = "\t\t\t" . '/x\',';
-	$out[] = "\t\t\t" . '$string';
-	$out[] = "\t\t" . ');';
-	$out[] = "\t" . '}';
-	$out[] = '}';
+	$out[] = "define( 'TLN_REGEX_ALTS_{$IDX}', '" . $regex_alts[ $idx ] . "' );";
+	$out[] = "define( 'TLN_REGEX_{$IDX}', '/' . TLN_REGEX_ALTS_{$IDX} . '/' );";
 }
 
 if ( ( defined( 'WP_DEBUG' ) && WP_DEBUG ) || ! empty( $_SERVER['TLN_DEBUG'] ) ) { // Set via command line "TLN_DEBUG=1 php __FILE__".
 	$out[] = '';
-	$out[] = '// The following unicode versions of the functions and global variable dumps are for testing/debugging purposes only.';
+	$out[] = '// The following unicode versions of the global variable regex alternatives and dumps are for testing/debugging purposes only.';
 	$out[] = '';
+	$out[] = 'if ( ( defined( \'WP_DEBUG\' ) && WP_DEBUG ) ) {';
 	foreach ( $out_idxs as $idx ) {
 		$regex_alts = '';
 
@@ -290,21 +291,11 @@ if ( ( defined( 'WP_DEBUG' ) && WP_DEBUG ) || ! empty( $_SERVER['TLN_DEBUG'] ) )
 			$regex_alts .= tln_unicode_preg_fmt( $first ) . ( $first + 1 === $carry ? '' : '-' ) . tln_unicode_preg_fmt( $carry );
 		}
 
-		$out[] = 'if ( ( defined( \'WP_DEBUG\' ) && WP_DEBUG ) ) {';
+		$IDX = strtoupper( $idx );
 		$out[] = '';
-		$out[] = "\t" . "if ( ! function_exists( 'tln_in_{$idx}_u' ) ) {";
-		$out[] = '';
-		$out[] = "\t\t" . "function tln_in_{$idx}_u( \$string ) {";
-		$out[] = "\t\t\t" . 'return 1 === preg_match(';
-		$out[] = "\t\t\t\t" . '\'/[';
-		$out[] = "\t\t\t\t" . $regex_alts;
-		$out[] = "\t\t\t\t" . ']/ux\',';
-		$out[] = "\t\t\t\t" . '$string';
-		$out[] = "\t\t\t" . ');';
-		$out[] = "\t\t" . '}';
-		$out[] = "\t" . '}';
+		$out[] = "\t" . "define( 'TLN_REGEX_ALTS_{$IDX}_U', '" . $regex_alts . "' );";
+		$out[] = "\t" . "define( 'TLN_REGEX_{$IDX}_U', '/[' . TLN_REGEX_ALTS_{$IDX}_U . ']/u' );";
 
-		/*
 		$out[] = '';
 		$out[] = "\t" . "global \$tln_{$idx};";
 		$out[] = "\t" . "\$tln_{$idx} = array( // " . count( $codepoints[ $idx ] ) . ' codepoints';
@@ -312,9 +303,8 @@ if ( ( defined( 'WP_DEBUG' ) && WP_DEBUG ) || ! empty( $_SERVER['TLN_DEBUG'] ) )
 			$out[] = "\t\t" . implode( ', ', array_map( 'tln_unicode_fmt', $codepoints_chunk ) ) . ',';
 		}
 		$out[] = "\t" . ');';
-		*/
-		$out[] = '}';
 	}
+	$out[] = '}';
 }
 
 $out = implode( "\n", $out ) . "\n";

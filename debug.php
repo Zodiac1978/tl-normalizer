@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 if ( WP_DEBUG ) :
 
 if ( ! defined( 'TLN_DEBUG' ) ) define( 'TLN_DEBUG', WP_DEBUG );
-if ( ! defined( 'TLN_DEBUG_PRINT_LIMIT' ) ) define( 'TLN_DEBUG_PRINT_LIMIT', 512 );
+if ( ! defined( 'TLN_DEBUG_PRINT_LIMIT' ) ) define( 'TLN_DEBUG_PRINT_LIMIT', 256 );
 
 if ( ! defined( 'WP_CONTENT_DIR' ) ) define( 'WP_CONTENT_DIR', '' );
 
@@ -44,10 +44,7 @@ function tln_debug_trace( $trace, $func_get_args ) {
 	$line = isset( $trace[0]['line'] ) ? $trace[0]['line'] : '';
 	$function_args = '';
 	if ( ( $function = isset( $trace[1]['function'] ) ? $trace[1]['function'] : '' ) && ! empty( $trace[1]['args'] ) ) {
-		$function_args = array_reduce( $trace[1]['args'], function ( $carry, $item ) {
-			return ( $carry === null ? '' : $carry . ', ' )
-					. ( is_array( $item ) ? 'Array' : ( is_object( $item ) ? 'Object' : ( is_null( $item ) ? 'null' : str_replace( "\n", '', tln_print_r( $item ) ) ) ) );
-		} );
+		$function_args = array_reduce( $trace[1]['args'], 'tln_debug_trace_array_reduce_cb' );
 	}
 
 	$ret[] = $file . ':' . $line . ' ' . $function . '(' . tln_print_r( $function_args ) . ') '; // Limit $function_args length.
@@ -55,6 +52,14 @@ function tln_debug_trace( $trace, $func_get_args ) {
 	foreach ( $func_get_args as $func_get_arg ) $ret[] = is_array( $func_get_arg ) || is_object( $func_get_arg ) ? tln_print_r( $func_get_arg ) : $func_get_arg;
 
 	return $ret;
+}
+
+/**
+ * Callback for array_reduce() in tln_debug_trace().
+ */
+function tln_debug_trace_array_reduce_cb( $carry, $item ) {
+	return ( $carry === null ? '' : $carry . ', ' )
+			. ( is_array( $item ) ? 'Array' : ( is_object( $item ) ? 'Object' : ( is_null( $item ) ? 'null' : str_replace( "\n", '', print_r( $item, true ) ) ) ) );
 }
 
 /**
@@ -82,18 +87,30 @@ function tln_backtrace( $offset = 0, $length = null ) {
  * Wrapper around PHP print_r() to limit length dumped.
  */
 function tln_print_r( $var ) {
-	$print_r = print_r( $var, true );
-	if ( is_array( $print_r ) ) {
-		return array_map( 'tln_print_r_limit_cb', $print_r );
+	if ( is_array( $var ) ) {
+		return print_r( array_map( 'tln_print_r', $var ), true );
 	}
-	return tln_print_r_limit_cb( $print_r );
+	return tln_print_r_limit_cb( print_r( $var, true ) );
 }
 
 /**
  * Callback for tln_print_r().
  */
 function tln_print_r_limit_cb( $str ) {
-	return substr( $str, 0, TLN_DEBUG_PRINT_LIMIT );
+	if ( strlen( $str ) > TLN_DEBUG_PRINT_LIMIT ) {
+		return substr( $str, 0, TLN_DEBUG_PRINT_LIMIT ) . '...';
+	}
+	return $str;
+}
+
+/**
+ * Hex dump version of tln_print_r().
+ */
+function tln_print_r_hex( $var ) {
+	if ( is_array( $var ) ) {
+		return print_r( array_map( 'tln_print_r_hex', $var ), true );
+	}
+	return tln_print_r_limit_cb( tln_bin2hex( $var ) );
 }
 
 /**

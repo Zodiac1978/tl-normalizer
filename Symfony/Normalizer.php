@@ -10,7 +10,7 @@
  */
 
 // gitlost removed namespace stuff, renamed to TLN_Normalizer to avoid conflicts, allowed to be included more than once.
-// gitlost subbed tln_is_valid_utf8()/tln_in_XXX() for PCRE UTF-8 mode tests, added full isNormalized() check by falling back to normalize(), made mb_overload_string safe.
+// gitlost use single-byte preg_XXX()'s, and generated regex alternatives and preg_match_all(), added full isNormalized() check for NFC with fall back to normalize().
 // https://github.com/symfony/polyfill/tree/master/src/Intl/Normalizer
 
 // namespace Symfony\Polyfill\Intl\Normalizer; // gitlost
@@ -25,6 +25,28 @@
  *
  * @internal
  */
+// gitlost begin
+// See https://www.w3.org/International/questions/qa-forms-utf-8
+if ( ! defined( 'TLN_REGEX_IS_VALID_UTF8' ) ) {
+	define( 'TLN_REGEX_IS_VALID_UTF8',
+				'/\A(?:
+				  [\x00-\x7f]                                     # ASCII
+				| [\xc2-\xdf][\x80-\xbf]                          # non-overlong 2-byte
+				| \xe0[\xa0-\xbf][\x80-\xbf]                      # excluding overlongs
+				| [\xe1-\xec\xee\xef][\x80-\xbf][\x80-\xbf]       # straight 3-byte
+				| \xed[\x80-\x9f][\x80-\xbf]                      # excluding surrogates
+				| \xf0[\x90-\xbf][\x80-\xbf][\x80-\xbf]           # planes 1-3
+				| [\xf1-\xf3][\x80-\xbf][\x80-\xbf][\x80-\xbf]    # planes 4-15
+				| \xf4[\x80-\x8f][\x80-\xbf][\x80-\xbf]           # plane 16
+				)*+\z/x'
+	);
+}
+if ( ! defined( 'TLN_REGEX_ALTS_NFC_NOES' ) ) {
+	require dirname( __FILE__ ) . '/tln_regex_alts.php';
+	// (Possibly) unstable code point(s) (or end of string) proceeded by a stable code point (or start of string). See http://unicode.org/reports/tr15/#Stable_Code_Points
+	define( 'TLN_REGEX_NFC_SUBNORMALIZE', '/(?:\A|[\x00-\x7f]|(?:[\xc2-\xdf]|(?:[\xe0-\xef]|[\xf0-\xf4].).).)(?:(?:' . TLN_REGEX_ALTS_NFC_NOES_MAYBES_REORDERS . ')++|\z)/' );
+}
+// gitlost end
 if ( ! class_exists( 'TLN_Normalizer' ) ) : class TLN_Normalizer // Allow file to be included more than once (for testing) // gitlost
 {
     const NONE = 1;
@@ -43,7 +65,8 @@ if ( ! class_exists( 'TLN_Normalizer' ) ) : class TLN_Normalizer // Allow file t
     private static $cC;
     private static $ulenMask = array("\xC0" => 2, "\xD0" => 2, "\xE0" => 3, "\xF0" => 4);
     private static $ASCII = "\x20\x65\x69\x61\x73\x6E\x74\x72\x6F\x6C\x75\x64\x5D\x5B\x63\x6D\x70\x27\x0A\x67\x7C\x68\x76\x2E\x66\x62\x2C\x3A\x3D\x2D\x71\x31\x30\x43\x32\x2A\x79\x78\x29\x28\x4C\x39\x41\x53\x2F\x50\x22\x45\x6A\x4D\x49\x6B\x33\x3E\x35\x54\x3C\x44\x34\x7D\x42\x7B\x38\x46\x77\x52\x36\x37\x55\x47\x4E\x3B\x4A\x7A\x56\x23\x48\x4F\x57\x5F\x26\x21\x4B\x3F\x58\x51\x25\x59\x5C\x09\x5A\x2B\x7E\x5E\x24\x40\x60\x7F\x00\x01\x02\x03\x04\x05\x06\x07\x08\x0B\x0C\x0D\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F";
-	private static $s, $form, $normalize; // gitlost Cache of call to normalize() in isNormalized().
+	protected static $s = null, $form = null, $normalize = null; // gitlost Cache various info discovered in isNormalized().
+	protected static $mb_overload_string = null; // gitlost Set if mbstring extension loaded with string function overload set.
 
     public static function isNormalized($s, $form = self::NFC)
     {
@@ -54,24 +77,46 @@ if ( ! class_exists( 'TLN_Normalizer' ) ) : class TLN_Normalizer // Allow file t
             return true;
         }
 		// gitlost begin
-        if (self::NFC === $form) { // if (self::NFC === $form && preg_match('//u', $s) && !preg_match('/[^\x00-\x{2FF}]/u', $s)) {
-			if (!tln_is_valid_utf8($s)) {
+        if (self::NFC === $form) {
+			if (1 !== preg_match(TLN_REGEX_IS_VALID_UTF8, $s)) {
 				return false;
 			}
-			if (tln_in_nfc_noes($s)) { // If contains characters that can never be in a NFC normalized string.
-				return false;
-			}
-			if (!tln_in_nfc_maybes_or_reorders($s)) { // If doesn't have any characters that might be recomposed for NFC or reordered.
+			if (1 !== preg_match(TLN_REGEX_NFC_NOES_MAYBES_REORDERS, $s)) { // If contains no characters that could possibly need normalizing...
 				return true;
 			}
-		}
 
-		$normalize = self::normalize($s, $form); // Give true answer by doing full normalize check.
+			if (null === self::$D) {
+				self::$D = self::getData('canonicalDecomposition');
+				self::$cC = self::getData('combiningClass');
+			}
+
+			if (null === self::$C) {
+				self::$C = self::getData('canonicalComposition');
+			}
+
+			if (null === self::$mb_overload_string) {
+				self::$mb_overload_string = defined('MB_OVERLOAD_STRING') && (ini_get('mbstring.func_overload') & MB_OVERLOAD_STRING);
+			}
+			if (self::$mb_overload_string) {
+				$mbEncoding = mb_internal_encoding();
+				mb_internal_encoding('8bit');
+			}
+
+			// Using this method is faster where percentage of normalization candidates < 30%, and significantly faster for < 5%. It's slower where percentage > 40%.
+			$normalize = preg_replace_callback( TLN_REGEX_NFC_SUBNORMALIZE, 'TLN_Normalizer::subnormalize', $s );
+
+			if (self::$mb_overload_string) {
+				mb_internal_encoding($mbEncoding);
+			}
+		} else {
+			$normalize = self::normalize($s, $form); // Give true answer by doing full normalize check.
+		}
 		$result = ($s === $normalize);
 
 		if ($result) {
 			self::$s = self::$form = self::$normalize = null; // Clear cache.
 		} else {
+			// Note assuming "if ! isNormalized() normalize()" pattern.
 			self::$s = $s; self::$form = $form; self::$normalize = $normalize; // Cache for immediate use in normalize().
 		}
 
@@ -82,8 +127,17 @@ if ( ! class_exists( 'TLN_Normalizer' ) ) : class TLN_Normalizer // Allow file t
     public static function normalize($s, $form = self::NFC)
     {
 		// gitlost begin
-        switch ($form) { // Check $form first to avoid call to tln_is_valid_utf8() when using cache.
-            case self::NONE: return tln_is_valid_utf8($s .= '') ? $s : false; // Note must still check validity.
+		if (null !== self::$normalize ) {
+			if ($s === self::$s && $form === self::$form) { //  Use cache if available.
+				$result = self::$normalize;
+				self::$s = self::$form = self::$normalize = null; // Clear cache (try to keep memory usage to a min).
+				return $result;
+			}
+			self::$s = self::$form = self::$normalize = null; // Clear cache (try to keep memory usage to a min).
+		}
+
+        switch ($form) {
+            case self::NONE: return 1 === preg_match(TLN_REGEX_IS_VALID_UTF8, $s .= '') ? $s : false; // Note must still check validity.
             case self::NFC: $C = true; $K = false; break;
             case self::NFD: $C = false; $K = false; break;
             case self::NFKC: $C = true; $K = true; break;
@@ -91,13 +145,7 @@ if ( ! class_exists( 'TLN_Normalizer' ) ) : class TLN_Normalizer // Allow file t
             default: return false;
         }
 
-		if (null !== self::$normalize && $s === self::$s && $form === self::$form) { //  Use cache if available.
-			$result = self::$normalize;
-			self::$s = self::$form = self::$normalize = null; // Clear cache (try to keep memory usage to a min).
-			return $result;
-		}
-
-        if (!tln_is_valid_utf8($s .= '')) { // if (!preg_match('//u', $s .= '')) {
+		if (1 !== preg_match(TLN_REGEX_IS_VALID_UTF8, $s .= '')) {
             return false;
         }
 		// gitlost end
@@ -115,7 +163,11 @@ if ( ! class_exists( 'TLN_Normalizer' ) ) : class TLN_Normalizer // Allow file t
             self::$cC = self::getData('combiningClass');
         }
 
-        if (null !== $mbEncoding = (2 /* MB_OVERLOAD_STRING */ & (int) ini_get('mbstring.func_overload')) ? mb_internal_encoding() : null) {
+		if (null === self::$mb_overload_string) { // gitlost
+			self::$mb_overload_string = defined('MB_OVERLOAD_STRING') && (ini_get('mbstring.func_overload') & MB_OVERLOAD_STRING); // gitlost
+		} // gitlost
+		if (self::$mb_overload_string) { // gitlost
+			$mbEncoding = mb_internal_encoding(); // gitlost
             mb_internal_encoding('8bit');
         }
 
@@ -128,7 +180,7 @@ if ( ! class_exists( 'TLN_Normalizer' ) ) : class TLN_Normalizer // Allow file t
 
             $r = self::recompose($r);
 		}
-        if (null !== $mbEncoding) {
+        if (self::$mb_overload_string) { // gitlost
             mb_internal_encoding($mbEncoding);
         }
 
@@ -159,10 +211,12 @@ if ( ! class_exists( 'TLN_Normalizer' ) ) : class TLN_Normalizer // Allow file t
                     $tail = '';
                 }
 
+				/* gitlost Don't bother with strspn optimization as for NFC subnormalize() expecting at most one ASCII. Note assuming "if ! isNormalized() normalize()" pattern.
                 if ($j = strspn($s, $ASCII, $i + 1)) {
                     $lastUchr .= substr($s, $i, $j);
                     $i += $j;
                 }
+				gitlost */
 
                 $result .= $lastUchr;
                 $lastUchr = $s[$i];
@@ -245,9 +299,9 @@ if ( ! class_exists( 'TLN_Normalizer' ) ) : class TLN_Normalizer // Allow file t
                     $c = array();
                 }
 
-                $j = 1 + strspn($s, $ASCII, $i + 1);
-                $result .= substr($s, $i, $j);
-                $i += $j;
+                // gitlost Don't bother with strspn optimization - see recompose() $j = 1 + strspn($s, $ASCII, $i + 1);
+                $result .= $s[$i]; // gitlost $result .= substr($s, $i, $j);
+                $i++; // gitlost $i += $j;
                 continue;
             }
 
@@ -324,6 +378,13 @@ if ( ! class_exists( 'TLN_Normalizer' ) ) : class TLN_Normalizer // Allow file t
         return $result;
     }
 
+	// gitlost begin Callback from preg_replace_callback().
+    protected static function subnormalize($matches)
+    {
+		return self::recompose(self::decompose($matches[0], false));
+    }
+	// gitlost end
+
     private static function getData($file)
     {
 		return require dirname( __FILE__ ).'/Resources/unidata/'.$file.'.php'; // gitlost (__DIR__ is 5.3.0)
@@ -336,28 +397,3 @@ if ( ! class_exists( 'TLN_Normalizer' ) ) : class TLN_Normalizer // Allow file t
 		gitlost */
     }
 } endif; // gitlost
-// gitlost begin
-if ( ! function_exists( 'tln_is_valid_utf8' ) ) {
-
-	// To avoid a PCRE dependency, the Symfony Normalizer polyfill has been modified to call tln_is_valid_utf8() instead of using preg_match() directly.
-	function tln_is_valid_utf8( $string ) {
-
-		// See https://www.w3.org/International/questions/qa-forms-utf-8
-		return 1 === preg_match(
-			'/\A(?:
-			  [\x00-\x7f]                                     # ASCII
-			| [\xc2-\xdf][\x80-\xbf]                          # non-overlong 2-byte
-			| \xe0[\xa0-\xbf][\x80-\xbf]                      # excluding overlongs
-			| [\xe1-\xec\xee\xef][\x80-\xbf][\x80-\xbf]       # straight 3-byte
-			| \xed[\x80-\x9f][\x80-\xbf]                      # excluding surrogates
-			| \xf0[\x90-\xbf][\x80-\xbf][\x80-\xbf]           # planes 1-3
-			| [\xf1-\xf3][\x80-\xbf][\x80-\xbf][\x80-\xbf]    # planes 4-15
-			| \xf4[\x80-\x8f][\x80-\xbf][\x80-\xbf]           # plane 16
-			)*+\z/x',
-			$string
-		);
-	}
-
-	require dirname( __FILE__ ) . '/tln_ins.php';
-}
-// gitlost end

@@ -37,7 +37,7 @@ class Tests_TLN_Comment extends WP_UnitTestCase {
 		global $tlnormalizer;
 		$this->assertArrayHasKey( 'comment', $tlnormalizer->added_filters );
 
-		$decomposed_str = "u\xCC\x88"; // u umlaut.
+		$decomposed_str = "u\xcc\x88"; // u umlaut.
 
 		$post = self::factory()->post->create_and_get( array( 'post_title' => 'some-post', 'post_type' => 'post' ) );
 		$this->assertInstanceOf( 'WP_Post', $post );
@@ -50,7 +50,7 @@ class Tests_TLN_Comment extends WP_UnitTestCase {
 
 		$comment = get_comment( $comment_id );
 		$this->assertInstanceOf( 'WP_Comment', $comment );
-		$this->assertEquals( TLN_Normalizer::normalize( $updated_comment_text ), $comment->comment_content );
-		if ( class_exists( 'Normalizer' ) ) $this->assertEquals( Normalizer::normalize( $updated_comment_text ), $comment->comment_content );
+		$this->assertSame( TLN_Normalizer::normalize( $updated_comment_text ), $comment->comment_content );
+		if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $updated_comment_text ), $comment->comment_content );
 	}
 }

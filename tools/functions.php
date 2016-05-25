@@ -257,7 +257,7 @@ function tln_utf8_regex_alts( $ranges ) {
 		}
 
 		tln_utf8_trie( $trie, $range, $idx );
-		//error_log("loop trie=" . print_r($trie, true));
+		//error_log( "loop trie=" . print_r( $trie, true ) );
 	}
 
 	return implode( '|', tln_utf8_trie_regex_alts( $trie ) );
@@ -275,6 +275,30 @@ function tln_get_cb( $el ) {
  */
 function tln_array_map_recursive( $callback, $array ) {
 	return filter_var( $array, FILTER_CALLBACK, array( 'options' => $callback ) );
+}
+
+/**
+ * Strip any invalid UTF-8 sequences from string.
+ */
+function tln_strip_invalid_utf8( $string ) {
+	// Based on wpdb::strip_invalid_text() in "wp-includes/wp-db.php".
+	// See https://www.w3.org/International/questions/qa-forms-utf-8
+	// See http://stackoverflow.com/a/1401716/664741
+	return preg_replace(
+		'/
+		 (
+			(?: [\x00-\x7f]                                     # ASCII
+			|   [\xc2-\xdf][\x80-\xbf]                          # non-overlong 2-byte
+			|   \xe0[\xa0-\xbf][\x80-\xbf]                      # excluding overlongs
+			|   [\xe1-\xec\xee\xef][\x80-\xbf][\x80-\xbf]       # straight 3-byte
+			|   \xed[\x80-\x9f][\x80-\xbf]                      # excluding surrogates
+			|   \xf0[\x90-\xbf][\x80-\xbf][\x80-\xbf]           # planes 1-3
+			|   [\xf1-\xf3][\x80-\xbf][\x80-\xbf][\x80-\xbf]    # planes 4-15
+			|   \xf4[\x80-\x8f][\x80-\xbf][\x80-\xbf]           # plane 16
+			){1,40}                                             # ...one or more times
+		 )
+		 | .                                                    # anything else
+		/x', '$1', $string );
 }
 
 /**
@@ -390,6 +414,7 @@ function tln_utf8_rand_ratio_str( $utf8_len = 10000, $other_ratio = 0.001, $othe
 	$other_len = min( intval( $utf8_len * $other_ratio ), $utf8_len );
 	$valid_len = $utf8_len - $other_len;
 
+	// TODO: very slow for large $len.
 	for ( $i = 0; $i < $valid_len; $i++ ) {
 		$ret[] = $valid_strs[ rand( 0, $valid_max ) ];
 	}
@@ -413,9 +438,10 @@ function tln_utf8_rand_ratio_str( $utf8_len = 10000, $other_ratio = 0.001, $othe
 function tln_utf8_rand_str( $len = 10000, $chr_max = 0x7f ) {
 	$ret = array();
 
+	// TODO: very slow for large $len.
 	if ( $chr_max > 0x7f ) {
 		for ( $i = 0; $i < $len; $i++ ) {
-			$ret[] = tln_utf8_chr( rand( 0, $chr_max ) );
+			$ret[] = tln_strip_invalid_utf8( tln_utf8_chr( rand( 0, $chr_max ) ) );
 		}
 	} else {
 		for ( $i = 0; $i < $len; $i++ ) {

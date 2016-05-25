@@ -36,7 +36,7 @@ class Tests_TLN_Term extends WP_UnitTestCase {
 		global $tlnormalizer;
 		$this->assertArrayHasKey( 'term', $tlnormalizer->added_filters );
 
-		$decomposed_str = "u\xCC\x88"; // u umlaut.
+		$decomposed_str = "u\xcc\x88"; // u umlaut.
 
 		$name = 'term name ' . $decomposed_str;
 		$args = array(
@@ -56,9 +56,9 @@ class Tests_TLN_Term extends WP_UnitTestCase {
 		$out = get_term( $id );
 		$this->assertInstanceOf( 'WP_Term', $out );
 
-		$this->assertEquals( TLN_Normalizer::normalize( $name ), $out->name );
-		if ( class_exists( 'Normalizer' ) ) $this->assertEquals( Normalizer::normalize( $name ), $out->name );
-		$this->assertEquals( TLN_Normalizer::normalize( $args['description'] ), $out->description );
-		if ( class_exists( 'Normalizer' ) ) $this->assertEquals( Normalizer::normalize( $args['description'] ), $out->description );
+		$this->assertSame( TLN_Normalizer::normalize( $name ), $out->name );
+		if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $name ), $out->name );
+		$this->assertSame( TLN_Normalizer::normalize( $args['description'] ), $out->description );
+		if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $args['description'] ), $out->description );
 	}
 }

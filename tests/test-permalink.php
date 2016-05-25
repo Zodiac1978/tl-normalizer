@@ -27,6 +27,7 @@ class Tests_TLN_Permalink extends WP_UnitTestCase {
 	}
 
     /**
+	 * @ticket tln_permalink_permalink
      */
 	function test_permalink() {
 		$this->assertTrue( is_admin() ) ;
@@ -38,7 +39,7 @@ class Tests_TLN_Permalink extends WP_UnitTestCase {
 		global $tlnormalizer;
 		$this->assertArrayHasKey( 'permalink', $tlnormalizer->added_filters );
 
-		$decomposed_str = "u\xCC\x88"; // u umlaut.
+		$decomposed_str = "u\xcc\x88"; // u umlaut.
 
 		$title = 'some-post' . $decomposed_str;
 

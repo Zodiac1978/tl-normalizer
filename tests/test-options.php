@@ -37,7 +37,7 @@ class Tests_TLN_Options extends WP_UnitTestCase {
 		global $tlnormalizer;
 		$this->assertArrayHasKey( 'options', $tlnormalizer->added_filters );
 
-		$decomposed_str = "u\xCC\x88"; // u umlaut.
+		$decomposed_str = "u\xcc\x88"; // u umlaut.
 
 		$data = array(
 			'blogname' => 'Blogname' . $decomposed_str,
@@ -72,5 +72,36 @@ class Tests_TLN_Options extends WP_UnitTestCase {
 			$this->assertSame( TLN_Normalizer::normalize( $value ), $out );
 			if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $value ), $out );
 		}
+	}
+
+    /**
+	 * @ticket tln_options_format
+     */
+	function test_options_format() {
+		global $pagenow;
+		$pagenow = 'admin-ajax.php';
+		set_current_screen( $pagenow );
+
+		$this->assertTrue( is_admin() ) ;
+
+		$decomposed_str = "u\xcc\x88"; // u umlaut.
+
+		$_REQUEST['action'] = 'date_format';
+
+		do_action( 'init' );
+
+		$_POST['date'] = 'j F Y' . $decomposed_str;
+
+		$out = sanitize_option( 'date_format', $_POST['date'] );
+		$this->assertSame( TLN_Normalizer::normalize( $_POST['date'] ), $out );
+
+		$_REQUEST['action'] = 'time_format';
+
+		do_action( 'init' );
+
+		$_POST['date'] = 'j F Y' . $decomposed_str;
+
+		$out = sanitize_option( 'time_format', $_POST['date'] );
+		$this->assertSame( TLN_Normalizer::normalize( $_POST['date'] ), $out );
 	}
 }

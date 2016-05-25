@@ -32,6 +32,8 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 	static $normalizer_state = array();
 	static $new_8_0_0 = array( 0x8e3, 0xa69e, /*0xa69f,*/ 0xfe2e, 0xfe2f, 0x111ca, 0x1172b, ); // Combining class additions UCD 8.0.0 over 7.0.0
 	static $new_8_0_0_regex = '';
+	static $true = true;
+	static $false = false;
 
 	static function wpSetUpBeforeClass() {
 		global $tlnormalizer;
@@ -43,6 +45,9 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 
 		// Enable if using intl built with icu less than 56.1
 		self::$new_8_0_0_regex = '/' . implode( '|', array_map( __CLASS__.'::chr', self::$new_8_0_0 ) ) . '/';
+
+		// Normalizer::isNormalized() returns an integer on HHVM and a boolean on PHP
+		list( self::$true, self::$false ) = defined( 'HHVM_VERSION' ) ? array( 1, 0 ) : array( true, false );
 	}
 
 	static function wpTearDownAfterClass() {
@@ -68,6 +73,23 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
         $this->assertSame( $rin, $rpn );
     }
 
+	/**
+	 * @ticket tln_props
+	 */
+    function test_props() {
+
+        $rpn = new ReflectionClass( 'TLN_Normalizer' );
+
+		$props = $rpn->getStaticProperties();
+		$this->assertArrayHasKey( 'ASCII', $props );
+
+		$ascii = array_values( array_unique( str_split( $props['ASCII'] ) ) );
+		$this->assertSame( 0x80, count( $ascii ) );
+		for ( $i = 0; $i < 0x80; $i++ ) {
+			$this->assertSame( true, in_array( chr( $i ), $ascii ) );
+		}
+    }
+
     /**
 	 * @ticket tln_is_normalized
      */
@@ -76,31 +98,30 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
         $c = 'déjà';
         $d = TLN_Normalizer::normalize( $c, TLN_Normalizer::NFD );
 
-        // Normalizer::isNormalized() returns an integer on HHVM and a boolean on PHP
-        $this->assertEquals( true, TLN_Normalizer::isNormalized( '' ) );
-        $this->assertEquals( true, TLN_Normalizer::isNormalized( 'abc' ) );
-        $this->assertEquals( true, TLN_Normalizer::isNormalized( $c ) );
-        $this->assertEquals( true, TLN_Normalizer::isNormalized( $c, TLN_Normalizer::NFC ) );
-        $this->assertEquals( false, TLN_Normalizer::isNormalized( $c, TLN_Normalizer::NFD ) );
-        $this->assertEquals( false, TLN_Normalizer::isNormalized( $d, TLN_Normalizer::NFC ) );
-        $this->assertEquals( false, TLN_Normalizer::isNormalized( "\xFF" ) );
+        $this->assertSame( self::$true, TLN_Normalizer::isNormalized( '' ) );
+        $this->assertSame( self::$true, TLN_Normalizer::isNormalized( 'abc' ) );
+        $this->assertSame( self::$true, TLN_Normalizer::isNormalized( $c ) );
+        $this->assertSame( self::$true, TLN_Normalizer::isNormalized( $c, TLN_Normalizer::NFC ) );
+        $this->assertSame( self::$false, TLN_Normalizer::isNormalized( $c, TLN_Normalizer::NFD ) );
+        $this->assertSame( self::$false, TLN_Normalizer::isNormalized( $d, TLN_Normalizer::NFC ) );
+        $this->assertSame( self::$false, TLN_Normalizer::isNormalized( "\xFF" ) );
 
-        $this->assertEquals( true, TLN_Normalizer::isNormalized( $d, TLN_Normalizer::NFD ) );
-		$this->assertEquals( false, TLN_Normalizer::isNormalized( "u\xcc\x88", TLN_Normalizer::NFC ) ); // u umlaut.
+        $this->assertSame( self::$true, TLN_Normalizer::isNormalized( $d, TLN_Normalizer::NFD ) );
+		$this->assertSame( self::$false, TLN_Normalizer::isNormalized( "u\xcc\x88", TLN_Normalizer::NFC ) ); // u umlaut.
 
 		if ( class_exists( 'Normalizer' ) ) {
-        	$this->assertEquals( $d, Normalizer::normalize( $c, Normalizer::NFD ) );
+        	$this->assertSame( $d, Normalizer::normalize( $c, Normalizer::NFD ) );
 
-        	$this->assertEquals( Normalizer::isNormalized( '' ), TLN_Normalizer::isNormalized( '' ) );
-        	$this->assertEquals( Normalizer::isNormalized( 'abc' ), TLN_Normalizer::isNormalized( 'abc' ) );
-        	$this->assertEquals( Normalizer::isNormalized( $c ), TLN_Normalizer::isNormalized( $c ) );
-        	$this->assertEquals( Normalizer::isNormalized( $c, Normalizer::NFC ), TLN_Normalizer::isNormalized( $c, TLN_Normalizer::NFC ) );
-        	$this->assertEquals( Normalizer::isNormalized( $c, Normalizer::NFD ), TLN_Normalizer::isNormalized( $c, TLN_Normalizer::NFD ) );
-        	$this->assertEquals( Normalizer::isNormalized( $d, Normalizer::NFC ), TLN_Normalizer::isNormalized( $d, TLN_Normalizer::NFC ) );
-        	$this->assertEquals( Normalizer::isNormalized( "\xFF" ), TLN_Normalizer::isNormalized( "\xFF" ) );
+        	$this->assertSame( Normalizer::isNormalized( '' ), TLN_Normalizer::isNormalized( '' ) );
+        	$this->assertSame( Normalizer::isNormalized( 'abc' ), TLN_Normalizer::isNormalized( 'abc' ) );
+        	$this->assertSame( Normalizer::isNormalized( $c ), TLN_Normalizer::isNormalized( $c ) );
+        	$this->assertSame( Normalizer::isNormalized( $c, Normalizer::NFC ), TLN_Normalizer::isNormalized( $c, TLN_Normalizer::NFC ) );
+        	$this->assertSame( Normalizer::isNormalized( $c, Normalizer::NFD ), TLN_Normalizer::isNormalized( $c, TLN_Normalizer::NFD ) );
+        	$this->assertSame( Normalizer::isNormalized( $d, Normalizer::NFC ), TLN_Normalizer::isNormalized( $d, TLN_Normalizer::NFC ) );
+        	$this->assertSame( Normalizer::isNormalized( "\xFF" ), TLN_Normalizer::isNormalized( "\xFF" ) );
 
-        	$this->assertEquals( true, Normalizer::isNormalized( $d, Normalizer::NFD ) );
-			$this->assertEquals( false, Normalizer::isNormalized( "u\xcc\x88", Normalizer::NFC ) ); // u umlaut.
+        	$this->assertSame( self::$true, Normalizer::isNormalized( $d, Normalizer::NFD ) );
+			$this->assertSame( self::$false, Normalizer::isNormalized( "u\xcc\x88", Normalizer::NFC ) ); // u umlaut.
 		}
     }
 
@@ -111,7 +132,7 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 
 		if ( class_exists( 'Normalizer' ) ) {
 			$c = Normalizer::normalize( 'déjà', TLN_Normalizer::NFC ).Normalizer::normalize( '훈쇼™', TLN_Normalizer::NFD );
-			$this->assertSame($c, TLN_Normalizer::normalize($c, TLN_Normalizer::NONE));
+			$this->assertSame( $c, TLN_Normalizer::normalize( $c, TLN_Normalizer::NONE ) );
 		}
         $c = TLN_Normalizer::normalize( 'déjà', TLN_Normalizer::NFC ).TLN_Normalizer::normalize( '훈쇼™', TLN_Normalizer::NFD );
         $this->assertSame( $c, TLN_Normalizer::normalize( $c, TLN_Normalizer::NONE ) );
@@ -131,7 +152,7 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
         	$this->assertSame( $kd, Normalizer::normalize( $c, Normalizer::NFKD ) );
 		}
 
-        $this->assertEquals( false, TLN_Normalizer::normalize( $c, -1 ) ); // HHVM returns null, PHP returns false
+        $this->assertSame( self::$false, TLN_Normalizer::normalize( $c, -1 ) );
         $this->assertFalse( TLN_Normalizer::normalize( "\xFF" ) );
     }
 
@@ -150,7 +171,7 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 			$tln_is_normalized = TLN_Normalizer::isNormalized( $string, $form );
 			$tln_normalize = TLN_Normalizer::normalize( $string, $form );
 
-			$this->assertSame( $is_normalized, $tln_is_normalized ); // Should be assertEquals for HHVM compatibility?
+			$this->assertSame( $is_normalized, $tln_is_normalized );
 			$this->assertSame( $normalize, $tln_normalize );
 		}
 	}
@@ -185,11 +206,11 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 		$this->assertSame( "\x8e\xa1", mb_substr( "\x8e\xa1", 0, 1 ) );
 		$this->assertSame( "\x8e\xa1", substr( "\x8e\xa1", 0, 1 ) );
 
-		$this->assertEquals( true, TLN_Normalizer::isNormalized( 'abc' ) );
+		$this->assertSame( self::$true, TLN_Normalizer::isNormalized( 'abc' ) );
 		$this->assertSame( $encoding, mb_internal_encoding() );
-		$this->assertEquals( true, TLN_Normalizer::isNormalized( "\xe2\x8e\xa1" ) );
+		$this->assertSame( self::$true, TLN_Normalizer::isNormalized( "\xe2\x8e\xa1" ) );
 		$this->assertSame( $encoding, mb_internal_encoding() );
-		$this->assertEquals( false, TLN_Normalizer::isNormalized( "u\xcc\x88" ) );
+		$this->assertSame( self::$false, TLN_Normalizer::isNormalized( "u\xcc\x88" ) );
 		$this->assertSame( $encoding, mb_internal_encoding() );
 
 		$this->assertSame( 'abc', TLN_Normalizer::normalize( 'abc' ) );
@@ -203,9 +224,9 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 	}
 
     /**
-	 * @ticket tln_normalize_conformance_8_0_0
+	 * @ticket tln_conformance_8_0_0
      */
-    function test_normalize_conformance_8_0_0() {
+    function test_conformance_8_0_0() {
 
         $t = file( dirname( __FILE__ ) . '/UCD-8.0.0/NormalizationTest.txt' );
         $c = array();
@@ -269,8 +290,7 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 					array_shift( $last9_c1s );
 				}
 
-				//$this->assertSame( 'one', 'two', "$line_num: {$line}" );
-				$this->assertEquals( true, TLN_Normalizer::isNormalized( $c[2], TLN_Normalizer::NFC ), "$line_num: {$line}c[2]=" . bin2hex( $c[2] ) );
+				$this->assertSame( self::$true, TLN_Normalizer::isNormalized( $c[2], TLN_Normalizer::NFC ), "$line_num: {$line}c[2]=" . bin2hex( $c[2] ) );
 				$this->assertSame( $c[2], TLN_Normalizer::normalize( $c[1], TLN_Normalizer::NFC ) );
 				$this->assertSame( $c[2], TLN_Normalizer::normalize( $c[2], TLN_Normalizer::NFC ) );
 				$this->assertSame( $c[2], TLN_Normalizer::normalize( $c[3], TLN_Normalizer::NFC ) );
@@ -279,7 +299,7 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 
 				if ( class_exists( 'Normalizer' ) ) {
 					if ( $c[2] !== $c[1] ) {
-						$this->assertEquals( false, TLN_Normalizer::isNormalized( $c[1], TLN_Normalizer::NFC ) );
+						$this->assertSame( self::$false, TLN_Normalizer::isNormalized( $c[1], TLN_Normalizer::NFC ) );
 					}
 					if ( ! self::$new_8_0_0_regex || ! preg_match( self::$new_8_0_0_regex, $c[1] ) ) {
 						$this->assertSame( Normalizer::normalize( $c[1], Normalizer::NFC ), TLN_Normalizer::normalize( $c[1], TLN_Normalizer::NFC ), "$line_num: {$line}c[1]=" . bin2hex( $c[1] ) );
@@ -287,7 +307,7 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 					$this->assertSame( Normalizer::normalize( $c[2], Normalizer::NFC ), TLN_Normalizer::normalize( $c[2], TLN_Normalizer::NFC ) );
 					$this->assertSame( Normalizer::normalize( $c[3], Normalizer::NFC ), TLN_Normalizer::normalize( $c[3], TLN_Normalizer::NFC ) );
 					if ( $c[2] !== $c[4] ) {
-						$this->assertEquals( Normalizer::isNormalized( $c[4], Normalizer::NFC ), TLN_Normalizer::isNormalized( $c[4], TLN_Normalizer::NFC ) );
+						$this->assertSame( Normalizer::isNormalized( $c[4], Normalizer::NFC ), TLN_Normalizer::isNormalized( $c[4], TLN_Normalizer::NFC ) );
 					}
 					$this->assertSame( Normalizer::normalize( $c[4], Normalizer::NFC ), TLN_Normalizer::normalize( $c[4], TLN_Normalizer::NFC ) );
 					$this->assertSame( Normalizer::normalize( $c[5], Normalizer::NFC ), TLN_Normalizer::normalize( $c[5], TLN_Normalizer::NFC ) );
@@ -323,8 +343,8 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 				if ( $x ) {
 					for ( $i = $last_x + 1; $i < $x; $i++ ) {
 						$c1 = self::chr( $i );
-						if ( tln_is_valid_utf8( $c1 ) ) {
-							$this->assertEquals( true, TLN_Normalizer::isNormalized( $c1, TLN_Normalizer::NFC ), "$line_num: {$line}c1=" . bin2hex( $c1 ) );
+						if ( 1 === preg_match( TLN_REGEX_IS_VALID_UTF8, $c1 ) ) {
+							$this->assertSame( self::$true, TLN_Normalizer::isNormalized( $c1, TLN_Normalizer::NFC ), "$line_num: {$line}c1=" . bin2hex( $c1 ) );
 							$this->assertSame( $c1, TLN_Normalizer::normalize( $c1, TLN_Normalizer::NFC ) );
 						}
 					}
@@ -335,7 +355,7 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
     }
 
     /**
-	 * @ticket tln_normalize_random
+	 * @ticket tln_random
 	 * @requires extension intl
      */
 	function test_random() {
@@ -349,17 +369,18 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 		);
 		for ( $i = 0, $len = count( $strs ); $i < $len; $i++ ) {
 			$str = $strs[ $i ];
-			$this->assertEquals( Normalizer::isNormalized( $str ), TLN_Normalizer::isNormalized( $str ) );
-			$this->assertEquals( Normalizer::normalize( $str ), TLN_Normalizer::normalize( $str ) );
+			$this->assertSame( Normalizer::isNormalized( $str ), TLN_Normalizer::isNormalized( $str ) );
+			$this->assertSame( Normalizer::normalize( $str ), TLN_Normalizer::normalize( $str ) );
 		}
 
-		for ( $i = 0; $i < 40; $i++ ) {
-			$str = tln_utf8_rand_str( rand( 100, 100000 ), TLN_UTF8_MAX );
+		global $tln_nfc_maybes_or_reorders;
+		for ( $i = 0; $i < 42; $i++ ) {
+			$str = tln_utf8_rand_ratio_str( rand( 100, 100000 ), 0.5, $tln_nfc_maybes_or_reorders );
 			if ( self::$new_8_0_0_regex ) {
 				$str = preg_replace( self::$new_8_0_0_regex, '', $str );
 			}
-			$this->assertEquals( Normalizer::isNormalized( $str ), TLN_Normalizer::isNormalized( $str ) );
-			$this->assertEquals( Normalizer::normalize( $str ), TLN_Normalizer::normalize( $str ) );
+			$this->assertSame( Normalizer::isNormalized( $str ), TLN_Normalizer::isNormalized( $str ) );
+			$this->assertSame( Normalizer::normalize( $str ), TLN_Normalizer::normalize( $str ) );
 			unset( $str );
 		}
 	}

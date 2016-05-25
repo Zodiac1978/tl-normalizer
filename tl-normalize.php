@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Normalizer
  * Plugin URI: https://github.com/Zodiac1978/tl-normalizer
- * Description: Normalizes content, excerpt, title and comment content to Normalization Form C.
- * Version: 2.0.4
+ * Description: Normalizes UTF-8 input to Normalization Form C.
+ * Version: 2.0.5
  * Author: Torsten Landsiedel
  * Author URI: http://torstenlandsiedel.de
  * License: GPLv2
@@ -36,12 +36,14 @@ http://pento.net/2014/02/18/dont-let-your-plugin-be-activated-on-incompatible-si
 
 class TLNormalizer {
 
+	static $plugin_basename = null; // Handy for testing.
+
 	// Use a high (ie low number) priority to beat other filters.
 	var $priority = 6;
 
 	// Trying to choose the earliest filter available, in 'db' context, so other filters can assume normalized input.
 	var $post_filters = array(
-		'pre_post_content', 'pre_post_title', 'pre_post_excerpt', /*'pre_post_password',*/ 'pre_post_name', 'pre_post_meta_input',
+		'pre_post_content', 'pre_post_title', 'pre_post_excerpt', /*'pre_post_password',*/ 'pre_post_name', 'pre_post_meta_input', 'pre_post_trackback_url',
 	);
 
 	var $comment_filters = array(
@@ -63,6 +65,7 @@ class TLNormalizer {
 	var $options_filters = array(
 		// General.
 		'pre_update_option_blogname', 'pre_update_option_blogdescription', 'pre_update_option_admin_email', 'pre_update_option_siteurl', 'pre_update_option_home',
+		'pre_update_option_date_format', 'pre_update_option_time_format',
 		// Writing. (Non-multisite only.)
 		'pre_update_option_mailserver_url', 'pre_update_option_mailserver_url', 'pre_update_option_mailserver_login', /*'pre_update_option_mailserver_pass',*/  'pre_update_option_ping_sites',
 		// Nothing texty in Reading.
@@ -75,9 +78,10 @@ class TLNormalizer {
 
 	var $settings_filters = array( // Network settings (multisite only).
 		'pre_update_site_option_blogname', 'pre_update_site_option_blogdescription', 'pre_update_site_option_admin_email', 'pre_update_site_option_siteurl', 'pre_update_site_option_home',
-		'pre_update_site_option_site_name', 'pre_update_site_option_new_admin_email', 'pre_update_site_option_limited_email_domains',
-		'pre_update_site_option_welcome_email', 'pre_update_site_option_welcome_user_email', 'pre_update_site_option_first_page',
-		'pre_update_site_option_first_comment', 'pre_update_site_option_first_comment_author', 'pre_update_site_option_first_comment_url',
+		'pre_update_site_option_site_name', 'pre_update_site_option_new_admin_email', 'pre_update_site_option_illegal_names',
+		/*'pre_update_site_option_limited_email_domains',*/ /*'pre_update_site_option_banned_email_domains',*/ // Stripped to ASCII.
+		'pre_update_site_option_welcome_email', 'pre_update_site_option_welcome_user_email', 'pre_update_site_option_first_post',
+		'pre_update_site_option_first_page', 'pre_update_site_option_first_comment', 'pre_update_site_option_first_comment_author', 'pre_update_site_option_first_comment_url',
 	);
 
 	var $menus_filters = array(
@@ -96,12 +100,17 @@ class TLNormalizer {
 	var $added_filters = array(); // Array of whether filters added or not per base.
 
 	// For testing/debugging.
-	var $dont_js = false, $dont_paste = false, $dont_filter = false, $no_normalizer = false;
+	static $not_compat = false;
+	var $dont_js = true, $dont_paste = false, $dont_filter = false, $no_normalizer = false;
 
 	/**
 	 * Check system compatibility, add 'init' action.
 	 */
 	function __construct() {
+
+		if ( null === self::$plugin_basename ) {
+			self::$plugin_basename = plugin_basename( __FILE__ );
+		}
 
 		add_action( 'admin_init', array( $this, 'check_version' ) );
 
@@ -124,8 +133,8 @@ class TLNormalizer {
 	 */
 	static function activation_check() {
 		if ( ! self::compatible_version() ) {
-			deactivate_plugins( plugin_basename( __FILE__ ) );
-			wp_die( __( 'Can\'t happen.', 'normalizer' ) );
+			deactivate_plugins( self::$plugin_basename );
+			wp_die( __( 'The plugin "Normalizer" is not compatible with your system and can\'t be activated.', 'normalizer' ) );
 		}
 	}
 
@@ -136,9 +145,10 @@ class TLNormalizer {
 	 */
 	function check_version() {
 		if ( ! self::compatible_version() ) {
-			if ( is_plugin_active( plugin_basename( __FILE__ ) ) ) {
-				deactivate_plugins( plugin_basename( __FILE__ ) );
-				add_action( 'admin_notices', array( $this, 'disabled_notice' ) );
+			if ( is_plugin_active( self::$plugin_basename ) ) {
+				deactivate_plugins( self::$plugin_basename );
+				$admin_notices_filter = is_network_admin() ? 'network_admin_notices' : ( is_user_admin() ? 'user_admin_notices' : 'admin_notices' );
+				add_action( $admin_notices_filter, array( $this, 'disabled_notice' ) );
 				if ( isset( $_GET['activate'] ) ) {
 					unset( $_GET['activate'] );
 				}
@@ -147,12 +157,12 @@ class TLNormalizer {
 	}
 
 	/**
-	 * Called on 'admin_notices' action.
+	 * Called on 'network_admin_notices', 'user_admin_notices' or 'admin_notices' action.
 	 */
 	function disabled_notice() {
 		$error_message  = '<div id="message" class="updated notice is-dismissible">';
 		$error_message .= '<p><strong>' . __( 'Plugin deactivated!', 'normalizer' ) . '</strong> ';
-		$error_message .= esc_html__( 'Can\'t happen.', 'normalizer' );
+		$error_message .= esc_html__( 'The plugin "Normalizer" is not compatible with your system and has been deactivated.', 'normalizer' );
 		$error_message .= '</p></div>';
 		echo $error_message;
 	}
@@ -163,7 +173,7 @@ class TLNormalizer {
 	static function compatible_version() {
 
 		// Totally compat! (Famous last words.)
-		return true;
+		return ! self::$not_compat; // For testing.
 	}
 
 	/**
@@ -265,6 +275,18 @@ class TLNormalizer {
 				}
 			}
 
+			// Ajax preview of date/time options.
+			if ( 'date_format' === $this->base ) {
+				$this->added_filters['date_format'] = true;
+
+				add_filter( 'sanitize_option_date_format', array( $this, 'sanitize_option_option' ), $this->priority, 3 );
+			}
+			if ( 'time_format' === $this->base ) {
+				$this->added_filters['$time_format'] = true;
+
+				add_filter( 'sanitize_option_time_format', array( $this, 'sanitize_option_option' ), $this->priority, 3 );
+			}
+
 			// Network settings. (Multisite only.)
 			if ( 'settings' === $this->base || 'customize_save' === $this->base ) {
 				$this->added_filters['settings'] = true;
@@ -346,7 +368,7 @@ class TLNormalizer {
 			}
 		}
 
-		tln_debug_log("base=", $this->base, ", added_filters=", $this->added_filters );
+		tln_debug_log( "base=", $this->base, ", added_filters=", $this->added_filters );
 	}
 
 	/**
@@ -368,7 +390,7 @@ class TLNormalizer {
 							$content = $normalized;
 						}
 					} else {
-						tln_debug_log("no_normalizer is_normalized content=" . bin2hex( $content ) );
+						tln_debug_log( "no_normalizer is_normalized content=" . bin2hex( $content ) );
 					}
 				} else {
 					if ( ! normalizer_is_normalized( $content ) ) {
@@ -380,7 +402,7 @@ class TLNormalizer {
 							$content = $normalized;
 						}
 					} else {
-						tln_debug_log("normalizer is_normalized content=" . bin2hex( $content ) );
+						tln_debug_log( "normalizer is_normalized content=" . bin2hex( $content ) );
 					}
 				}
 
@@ -568,6 +590,14 @@ class TLNormalizer {
 	}
 
 	/**
+	 * Called on 'sanitize_option_$option' filter.
+	 * For date/time format ajax preview. Just passthru to tl_normalizer().
+	 */
+	function sanitize_option_option( $value, $option, $original_value ) {
+		return $this->tl_normalizer( $value );
+	}
+
+	/**
 	 * Called on 'widget_update_callback' filter.
 	 */
 	function widget_update_callback( $instance, $new_instance, $old_instance, $this_widget ) {
@@ -605,7 +635,6 @@ class TLNormalizer {
 
 		// Load the javascript normalize polyfill https://github.com/walling/unorm
 		wp_enqueue_script( 'tln-unorm', plugins_url( "unorm/lib/unorm{$suffix}.js", __FILE__ ), array( 'tln-ie8' ), '1.4.1' );
-		wp_script_add_data( 'tln-unorm', 'conditional', 'lt IE 9' );
 
 		// Load the getSelection/setSelection jquery plugin https://github.com/timdown/rangyinputs
 		wp_enqueue_script( 'tln-rangyinputs', plugins_url( "rangyinputs/rangyinputs-jquery{$rangyinputs_suffix}.js", __FILE__ ), array( 'jquery' ), '1.2.0' );
@@ -764,11 +793,18 @@ var tl_normalize = tl_normalize || {}; // Our namespace.
 
 		if ( 'admin-ajax' === $base && ! empty( $_REQUEST['action'] ) ) {
 			$base = $_REQUEST['action'];
-			if ( 'inline-' === substr( $base, 0, 7 ) || 'sample-' === substr( $base, 0, 7 ) ) {
+			if ( 'inline-' === substr( $base, 0, 7 ) || 'sample-' === substr( $base, 0, 7 ) || 'update-' === substr( $base, 0, 7 ) ) {
 				$base = substr( $base, 7 );
 			}
 			if ( 'replyto-' === substr( $base, 0, 8 ) ) {
 				$base = substr( $base, 8 );
+			}
+		}
+
+		if ( 'async-upload' === $base && ! empty( $_REQUEST['action'] ) ) {
+			$base = $_REQUEST['action'];
+			if ( 'upload-' === substr( $base, 0, 7 ) ) {
+				$base = substr( $base, 7 );
 			}
 		}
 
@@ -788,12 +824,8 @@ var tl_normalize = tl_normalize || {}; // Our namespace.
 			$base = substr( $base, 5 );
 		}
 
-		if ( 'attachment' === $base || 'edit' === $base || 'meta' === $base || 'save' === $base ) {
+		if ( 'attachment' === $base || /*'edit' === $base ||*/ 'media' === $base || 'meta' === $base || 'save' === $base ) {
 			$base = 'post';
-		}
-
-		if ( 'comments' === $base ) {
-			$base = 'comment';
 		}
 
 		if ( 'profile' === $base ) {
@@ -802,10 +834,6 @@ var tl_normalize = tl_normalize || {}; // Our namespace.
 
 		if ( 'category' === $base || 'tag' == $base || 'tags' === $base || 'tax' === $base ) {
 			$base = 'term';
-		}
-
-		if ( 'options-' === substr( $base, 0, 8 ) ) {
-			$base = 'options';
 		}
 
 		if ( 'widgets' === $base ) {
