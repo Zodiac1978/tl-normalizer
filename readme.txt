@@ -2,8 +2,8 @@
 Contributors: zodiac1978
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=LCH9UVV7RKDFY
 Tags: Unicode, Normalization, Form C, Unicode Normalization Form C, Normalize, Normalizer
-Requires at least: 1.5.2
-Tested up to: 4.5
+Requires at least: 4.3.8
+Tested up to: 4.5.2
 Stable tag: 2.0.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -18,10 +18,12 @@ For everyone getting this warning from W3C validator: "Text run is not in Unicod
 
 See: http://www.w3.org/International/docs/charmod-norm/#choice-of-normalization-form
 
-For best results have the PHP Normalizer extension "intl" installed.
+For best performance have the PHP Internationalization extension "intl" installed, which includes the PHP class Normalizer.
 
-However the claim is that this version should work without the PHP Normalizer extension being installed, or if your installation
-is without UTF-8 for PCRE, or if you're running PHP 5.2.4...
+See: http://php.net/manual/en/intro.intl.php and http://php.net/manual/en/intl.installation.php
+
+However the claim is that this version should work without the PHP Internationalization extension being installed, or if your installation
+is without UTF-8 for PCRE, or if you're running PHP 5.2, or if you're using IE8...
 
 See: http://php.net/manual/en/normalizer.normalize.php
 See also: https://core.trac.wordpress.org/ticket/30130
