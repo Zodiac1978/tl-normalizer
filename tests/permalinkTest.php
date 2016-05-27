@@ -43,7 +43,7 @@ class Tests_TLN_Permalink extends WP_UnitTestCase {
 
 		$title = 'some-post' . $decomposed_str;
 
-		$post = self::factory()->post->create_and_get( array( 'post_title' => $title, 'post_type' => 'post' ) );
+		$post = $this->factory->post->create_and_get( array( 'post_title' => $title, 'post_type' => 'post' ) );
 
 		$out = get_sample_permalink( $post->ID, $title );
 

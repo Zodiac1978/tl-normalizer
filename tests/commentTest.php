@@ -39,9 +39,9 @@ class Tests_TLN_Comment extends WP_UnitTestCase {
 
 		$decomposed_str = "u\xcc\x88"; // u umlaut.
 
-		$post = self::factory()->post->create_and_get( array( 'post_title' => 'some-post', 'post_type' => 'post' ) );
+		$post = $this->factory->post->create_and_get( array( 'post_title' => 'some-post', 'post_type' => 'post' ) );
 		$this->assertInstanceOf( 'WP_Post', $post );
-		$comment_id = self::factory()->comment->create( array( 'comment_post_ID' => $post->post_id ) );
+		$comment_id = $this->factory->comment->create( array( 'comment_post_ID' => $post->post_id ) );
 
 		$updated_comment_text = 'Comment text' . $decomposed_str;
 		$update = wp_update_comment( array( 'comment_ID' => $comment_id, 'comment_content' => $updated_comment_text ) );
