@@ -3,13 +3,15 @@ language: php
 node_js:
 - "0.10"
 
-sudo: false
-
 php:
 - 7
 
 env:
 - WP_VERSION=latest
+
+before_install:
+- sudo apt-get -qq update
+- sudo apt-get install php-intl
 
 install:
 - npm install grunt-cli
