@@ -452,3 +452,18 @@ function tln_utf8_rand_str( $len = 10000, $chr_max = 0x7f ) {
 	shuffle( $ret );
 	return implode( '', $ret );
 }
+
+/**
+ * Get ICU version of loaded "intl" extension.
+ */
+function tln_icu_version() {
+	ob_start();
+	phpinfo( INFO_MODULES );
+	$icus = preg_filter( '/icu/i', '$0', explode( "\n", ob_get_clean() ) );
+	foreach ( $icus as $icu ) {
+		if ( preg_match( '/icu +version +=> +(\d+\.\d+(?:\.\d+)?)/i', $icu, $matches ) ) {
+			return $matches[1];
+		}
+	}
+	return false;
+}
