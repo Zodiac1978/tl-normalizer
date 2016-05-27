@@ -78,7 +78,8 @@ class Tests_TLN_TL_Normalize extends WP_UnitTestCase {
 
 		$this->assertTrue( false !== strpos( $out, 'unorm.js' ) );
 		$this->assertTrue( false !== strpos( $out, 'rangyinputs-jquery' ) );
-		$this->assertTrue( false !== strpos( $out, 'var tl_normalize =' ) );
+		$this->assertTrue( false !== strpos( $out, 'tl-normalize' ) );
+		$this->assertTrue( false !== strpos( $out, 'tl_normalize.' ) );
 
 		$wp_scripts = $old_wp_scripts;
 
@@ -98,7 +99,8 @@ class Tests_TLN_TL_Normalize extends WP_UnitTestCase {
 
 		$this->assertTrue( false !== strpos( $out, 'unorm.js' ) );
 		$this->assertTrue( false !== strpos( $out, 'rangyinputs-jquery' ) );
-		$this->assertTrue( false !== strpos( $out, 'var tl_normalize =' ) );
+		$this->assertTrue( false !== strpos( $out, 'tl-normalize' ) );
+		$this->assertTrue( false !== strpos( $out, 'tl_normalize.' ) );
 	}
 
 	/**

@@ -3,7 +3,7 @@
  * Plugin Name: Normalizer
  * Plugin URI: https://github.com/Zodiac1978/tl-normalizer
  * Description: Normalizes UTF-8 input to Normalization Form C.
- * Version: 2.0.5
+ * Version: 2.0.6
  * Author: Torsten Landsiedel
  * Author URI: http://torstenlandsiedel.de
  * License: GPLv2
@@ -11,6 +11,7 @@
  * Text Domain: normalizer
  * Domain Path: /languages
  */
+define( 'TLN_VERSION', '2.0.6' );
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) exit;
@@ -101,7 +102,7 @@ class TLNormalizer {
 
 	// For testing/debugging.
 	static $not_compat = false;
-	var $dont_js = true, $dont_paste = false, $dont_filter = false, $no_normalizer = false;
+	var $dont_js = false, $dont_paste = false, $dont_filter = false, $no_normalizer = false;
 
 	/**
 	 * Check system compatibility, add 'init' action.
@@ -626,20 +627,33 @@ class TLNormalizer {
 	 * Called on 'admin_enqueue_scripts' and 'wp_enqueue_scripts' actions.
 	 */
 	function enqueue_scripts() {
-		$suffix = ''; // defined( "SCRIPT_DEBUG" ) && SCRIPT_DEBUG ? '' : '.min'; // Don't bother with minifieds for the mo.
+		$suffix = defined( "SCRIPT_DEBUG" ) && SCRIPT_DEBUG ? '' : '.min';
 		$rangyinputs_suffix = defined( "SCRIPT_DEBUG" ) && SCRIPT_DEBUG ? '-src' : '';
 
 		// Load IE8 Array.prototype.reduceRight polyfill for unorm.
-		wp_enqueue_script( 'tln-ie8', plugins_url( "js/ie8{$suffix}.js", __FILE__ ), array(), '1.0.0' );
+		wp_enqueue_script( 'tln-ie8', plugins_url( "js/ie8{$suffix}.js", __FILE__ ), array(), TLN_VERSION );
 		wp_script_add_data( 'tln-ie8', 'conditional', 'lt IE 9' );
 
 		// Load the javascript normalize polyfill https://github.com/walling/unorm
-		wp_enqueue_script( 'tln-unorm', plugins_url( "unorm/lib/unorm{$suffix}.js", __FILE__ ), array( 'tln-ie8' ), '1.4.1' );
+		wp_enqueue_script( 'tln-unorm', plugins_url( "unorm/lib/unorm.js", __FILE__ ), array( 'tln-ie8' ), '1.4.1' ); // Note unorm doesn't come with minified so don't use.
 
 		// Load the getSelection/setSelection jquery plugin https://github.com/timdown/rangyinputs
 		wp_enqueue_script( 'tln-rangyinputs', plugins_url( "rangyinputs/rangyinputs-jquery{$rangyinputs_suffix}.js", __FILE__ ), array( 'jquery' ), '1.2.0' );
 
 		// Our script. Normalizes on paste in tinymce and in admin input/textareas and in some media stuff and in front-end input/textareas.
+		wp_enqueue_script( 'tl-normalize', plugins_url( "js/tl-normalize{$suffix}.js", __FILE__ ), array( 'jquery', 'tln-rangyinputs', 'tln-unorm' ), TLN_VERSION );
+
+		// Our parameters.
+		$params = array(
+			'p' => array( // Gets around WP stringifying direct localize elements.
+				'script_debug' => defined( "SCRIPT_DEBUG" ) && SCRIPT_DEBUG,
+				'dont_paste' => $this->dont_paste,
+			),
+		);
+		$params = apply_filters( 'tln_params', $params );
+		wp_localize_script( 'tl-normalize', 'tln_params', $params );
+
+		// Glue.
 		add_action( is_admin() ? 'admin_print_footer_scripts' : 'wp_print_footer_scripts', array( $this, 'print_footer_scripts' ) );
 	}
 
@@ -651,127 +665,35 @@ class TLNormalizer {
 		?>
 <script type="text/javascript">
 /*jslint ass: true, nomen: true, plusplus: true, regexp: true, vars: true, white: true, indent: 4 */
-/*global jQuery, wp */
-/*exported tl_normalize */
-
-var tl_normalize = tl_normalize || {}; // Our namespace.
+/*global jQuery, tl_normalize */
 
 ( function ( $ ) {
 	'use strict';
 
-	/**
-	 * Helper to normalize text pasted into text-like inputs and textareas.
-	 */
-	tl_normalize.input_textarea_normalize_on_paste = function ( context ) {
-		// TODO: Other types: "email", "password", "url" ??
-		$( 'input[type="text"], input[type="search"], textarea', context ).on( 'paste', function ( event ) {
-			var $el = $( this );
-			if ( $el.val().normalize ) {
-				// http://stackoverflow.com/a/1503425/664741
-				setTimeout( function () {
-					var before = $el.val(), after = before.normalize(), selection;
-					if ( before !== after ) {
-<?php if ( ! $this->dont_paste ) : ?>
-						selection = $el.getSelection();
-						$el.val( after );
-						$el.setSelection( selection.start + ( after.length - before.length ), selection.end + ( after.length - before.length ) );
-<?php endif; ?>
-						$el.change(); // Trigger change.
-					}
-					<?php if ( defined( "SCRIPT_DEBUG" ) && SCRIPT_DEBUG ) : ?> tl_normalize.dmp_before_and_after( before, after ); <?php endif; ?>
-				} );
-			}
-		} );
-	};
-
-<?php if ( defined( "SCRIPT_DEBUG" ) && SCRIPT_DEBUG ) : ?>
-	/**
-	 * Debug helper - dump before and after.
-	 */
-	tl_normalize.dmp_before_and_after = function ( before, after ) {
-		if ( console && console.log ) {
-			var i, before_dmp = '', after_dmp = '';
-			if ( before === after ) {
-				console.log( 'normalize same' );
-			} else {
-				for ( i = 0; i < before.length; i++ ) {
-					before_dmp += ( '0000' + before.charCodeAt( i ).toString( 16 ) ).slice( -4 ) + ' ';
-				}
-				for ( i = 0; i < after.length; i++ ) {
-					after_dmp += ( '0000' + after.charCodeAt( i ).toString( 16 ) ).slice( -4 ) + ' ';
-				}
-				console.log( 'normalize different\nbefore_dmp=%s\n after_dmp=%s', before_dmp, after_dmp );
-			}
-		}
-	};
-<?php endif; ?>
-
-	/**
-	 * Normalize text pasted into tinymce.
-	 */
-	$( document ).on( 'tinymce-editor-init', function ( event, editor ) {
-		// Using PastePreProcess, which is fired with the paste as a HTML string set in event.content.
-		// Easy option, may not be the best.
-		editor.on( 'PastePreProcess', function( event ) {
-			if ( event.content && event.content.length && event.content.normalize ) {
-				<?php if ( defined( "SCRIPT_DEBUG" ) && SCRIPT_DEBUG ) : ?> var before = event.content; <?php endif; ?>
-				event.content = event.content.normalize();
-				<?php if ( defined( "SCRIPT_DEBUG" ) && SCRIPT_DEBUG ) : ?> tl_normalize.dmp_before_and_after( before, event.content ); <?php endif; ?>
-			}
-		} );
-	} );
+	// TinyMCE editor init.
+	tl_normalize.tinymce_editor_init();
 
 	// jQuery ready.
 	$( function () {
 
 <?php if ( $is_admin ) : ?>
 
-		var $wpcontent = $( '#wpcontent' ), old_details_render, old_display_render;
-
-		// Any standard admin text input or textarea. May need refining.
-		if ( $wpcontent.length ) {
-			tl_normalize.input_textarea_normalize_on_paste( $wpcontent );
-		}
-
-		// Media.
-	 	if ( wp && wp.media && wp.media.view ) {
-			if ( wp.media.view.Attachment && wp.media.view.Attachment.Details ) {
-				// Override render. Probably not the best option.
-				old_details_render = wp.media.view.Attachment.Details.prototype.render;
-				wp.media.view.Attachment.Details.prototype.render = function () {
-					old_details_render.apply( this, arguments );
-					tl_normalize.input_textarea_normalize_on_paste( this.$el );
-				};
-			}
-			if ( wp.media.view.Settings && wp.media.view.Settings.AttachmentDisplay ) {
-				// Override render. Again, probably not the best option.
-				old_display_render = wp.media.view.Settings.AttachmentDisplay.prototype.render;
-				wp.media.view.Settings.AttachmentDisplay.prototype.render = function () {
-					old_display_render.apply( this, arguments );
-					tl_normalize.input_textarea_normalize_on_paste( this.$el );
-				};
-			}
-			// TODO: Other media stuff.
-		}
-		// TODO: Other stuff.
+		tl_normalize.admin_ready();
 
 <?php else : /*Front end*/ ?>
 
-		// Any standard text input or textarea. May need refining.
-		tl_normalize.input_textarea_normalize_on_paste();
+		tl_normalize.front_end_ready();
 
-<?php endif; /*is_admin()*/ ?>
+<?php endif; ?>
 
 	} );
 
 <?php if ( $is_admin ) : ?>
+
 	// Customizer - do outside jQuery ready otherwise will miss 'ready' event.
-	if ( wp && wp.customize ) {
-		wp.customize.bind( 'ready', function () {
-			tl_normalize.input_textarea_normalize_on_paste();
-		} );
-	}
-<?php endif; /*is_admin()*/ ?>
+	tl_normalize.customizer_ready();
+
+<?php endif; ?>
 
 } )( jQuery );
 </script>
@@ -843,6 +765,8 @@ var tl_normalize = tl_normalize || {}; // Our namespace.
 		return $base;
 	}
 }
+
+load_plugin_textdomain( 'normalizer', false, basename( dirname( __FILE__ ) ) . '/languages' );
 
 // Debug functions - no-ops unless WP_DEBUG is set.
 if ( ! function_exists( 'tln_debug_log' ) ) {
