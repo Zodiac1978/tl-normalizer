@@ -144,10 +144,13 @@ class Tests_TLN_Post extends WP_UnitTestCase {
 		$this->assertSame( TLN_Normalizer::normalize( $_POST['post_title'] ), $out->post_title );
 		if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $_POST['post_title'] ), $out->post_title );
 
-		$out = get_post_meta( $id, 'meta_input_key', true );
+		global $wp_version;
+		if ( version_compare( $wp_version, '4.4', '>=' ) ) {
+			$out = get_post_meta( $id, 'meta_input_key', true );
 
-		$this->assertSame( TLN_Normalizer::normalize( $_POST['meta_input']['meta_input_key'] ), $out );
-		if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $_POST['meta_input']['meta_input_key'] ), $out );
+			$this->assertSame( TLN_Normalizer::normalize( $_POST['meta_input']['meta_input_key'] ), $out );
+			if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $_POST['meta_input']['meta_input_key'] ), $out );
+		}
 
 		$out = get_post_meta( $id, 'metakeyinput_key' . $decomposed_str, true );
 

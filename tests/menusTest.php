@@ -64,7 +64,11 @@ class Tests_TLN_Menus extends WP_UnitTestCase {
 		$this->assertTrue( $id > 0 );
 
 		$out = wp_get_nav_menu_object( $id );
-		$this->assertInstanceOf( 'WP_Term', $out );
+		if ( class_exists( 'WP_Term' ) ) {
+			$this->assertInstanceOf( 'WP_Term', $out );
+		} else {
+			$this->assertTrue( is_object( $out ) );
+		}
 
 		$this->assertSame( TLN_Normalizer::normalize( $menu_data['menu-name'] ), $out->name );
 		if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $menu_data['menu-name'] ), $out->name );
