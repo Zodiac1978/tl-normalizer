@@ -17,7 +17,8 @@ if ( ! defined( 'WP_CONTENT_DIR' ) ) define( 'WP_CONTENT_DIR', '' );
  * Error log helper. Prints arguments, prefixing file, line and function called from.
  */
 function tln_error_log() {
-	$ret = tln_debug_trace( debug_backtrace(), func_get_args() );
+	$func_get_args = func_get_args();
+	$ret = tln_debug_trace( debug_backtrace(), $func_get_args );
 	$ret[0] = 'ERROR: ' . $ret[0] . "\n\t";
 	$ret = implode( '', $ret );
 	error_log( $ret );
@@ -29,7 +30,8 @@ function tln_error_log() {
  */
 function tln_debug_log() {
 	if ( ! TLN_DEBUG ) return '';
-	$ret = tln_debug_trace( debug_backtrace(), func_get_args() );
+	$func_get_args = func_get_args();
+	$ret = tln_debug_trace( debug_backtrace(), $func_get_args );
 	$ret[0] = $ret[0] . "\n\t";
 	$ret = implode( '', $ret );
 	error_log( $ret );

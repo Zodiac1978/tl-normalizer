@@ -10,6 +10,8 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Normalizes UTF-8 input to Normalization Form C.
 
+[![Build Status](https://travis-ci.org/gitlost/tl-normalizer.png?branch=master)](https://travis-ci.org/gitlost/tl-normalizer)
+
 == Description ==
 
 For everyone getting this warning from W3C validator: "Text run is not in Unicode Normalization Form C."
