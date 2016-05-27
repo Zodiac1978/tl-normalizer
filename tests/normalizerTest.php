@@ -150,6 +150,8 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
         	$this->assertSame( $d, Normalizer::normalize( $c, Normalizer::NFD ) );
         	$this->assertSame( $kc, Normalizer::normalize( $d, Normalizer::NFKC ) );
         	$this->assertSame( $kd, Normalizer::normalize( $c, Normalizer::NFKD ) );
+
+			$this->assertSame( TLN_Normalizer::normalize( "\xef\xa8\xae" ), Normalizer::normalize( "\xef\xa8\xae" ) );
 		}
 
         $this->assertSame( self::$false, TLN_Normalizer::normalize( $c, -1 ) );
@@ -302,7 +304,7 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 						$this->assertSame( self::$false, TLN_Normalizer::isNormalized( $c[1], TLN_Normalizer::NFC ) );
 					}
 					if ( ! self::$new_8_0_0_regex || ! preg_match( self::$new_8_0_0_regex, $c[1] ) ) {
-						$this->assertSame( Normalizer::normalize( $c[1], Normalizer::NFC ), TLN_Normalizer::normalize( $c[1], TLN_Normalizer::NFC ), "$line_num: {$line}c[1]=" . bin2hex( $c[1] ) );
+						$this->assertSame( $normalize_n = Normalizer::normalize( $c[1], Normalizer::NFC ), $normalize_t = TLN_Normalizer::normalize( $c[1], TLN_Normalizer::NFC ), "$line_num: {$line}c[1]=" . bin2hex( $c[1] ) . ", normalize_n=" . bin2hex( $normalize_n ) . ", normalize_t=" . bin2hex( $normalize_t ) );
 					}
 					$this->assertSame( Normalizer::normalize( $c[2], Normalizer::NFC ), TLN_Normalizer::normalize( $c[2], TLN_Normalizer::NFC ) );
 					$this->assertSame( Normalizer::normalize( $c[3], Normalizer::NFC ), TLN_Normalizer::normalize( $c[3], TLN_Normalizer::NFC ) );
