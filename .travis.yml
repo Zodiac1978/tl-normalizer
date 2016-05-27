@@ -25,4 +25,4 @@ before_script:
 - bash bin/install-wp-tests.sh wordpress_test root '' localhost $WP_VERSION
 
 script: 
-- PHPRC=. WP_TESTS_DIR=/tmp/wordpress-tests-lib phpunit --group tln_user
+- PHPRC=. WP_TESTS_DIR=/tmp/wordpress-tests-lib phpunit
