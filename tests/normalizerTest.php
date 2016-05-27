@@ -30,7 +30,7 @@
 class Tests_TLN_Normalizer extends WP_UnitTestCase {
 
 	static $normalizer_state = array();
-	static $missing_55_1 = array( ); // Combining class additions missing from 6
+	static $missing_55_1 = array( 0xfa2e ); // Combining class additions missing from 6
 	static $missing_56_1 = array( 0x8e3, 0xa69e, /*0xa69f,*/ 0xfe2e, 0xfe2f, 0x111ca, 0x1172b, ); // Combining class additions missing from 7.0.0
 	static $new_8_0_0_regex = '';
 	static $true = true;
