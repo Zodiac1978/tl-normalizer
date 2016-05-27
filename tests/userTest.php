@@ -70,7 +70,7 @@ class Tests_TLN_User extends WP_UnitTestCase {
 
 		$this->assertInternalType( 'int', $id );
 
-		$user = get_user_by( 'ID', $id );
+		$user = get_user_by( 'id', $id );
 
 		$this->assertInstanceOf( 'WP_User', $user );
 		$this->assertSame( TLN_Normalizer::normalize( $_POST['first_name'] ), $user->first_name );

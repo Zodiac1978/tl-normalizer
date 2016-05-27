@@ -168,9 +168,11 @@ class Tests_TLN_Post extends WP_UnitTestCase {
 
 		global $wpdb;
 
-		$meta_input_key_id = $wpdb->get_var( $wpdb->prepare( "SELECT meta_id FROM {$wpdb->postmeta} WHERE post_id = %d AND meta_key = %s", $id, 'meta_input_key' ) );
-		$this->assertTrue( is_numeric( $meta_input_key_id ) );
-		$this->assertTrue( $meta_input_key_id > 0 );
+		if ( version_compare( $wp_version, '4.4', '>=' ) ) {
+			$meta_input_key_id = $wpdb->get_var( $wpdb->prepare( "SELECT meta_id FROM {$wpdb->postmeta} WHERE post_id = %d AND meta_key = %s", $id, 'meta_input_key' ) );
+			$this->assertTrue( is_numeric( $meta_input_key_id ) );
+			$this->assertTrue( $meta_input_key_id > 0 );
+		}
 
 		$metakeyinput_id = $wpdb->get_var( $wpdb->prepare( "SELECT meta_id FROM {$wpdb->postmeta} WHERE post_id = %d AND meta_key = %s", $id, 'metakeyinput_key' . $decomposed_str ) );
 		$this->assertTrue( is_numeric( $metakeyinput_id ) );
@@ -194,10 +196,12 @@ class Tests_TLN_Post extends WP_UnitTestCase {
 		$out = edit_post();
 		$this->assertSame( $id, $out );
 
-		$out = get_post_meta( $id, 'meta_input_key', true );
+		if ( version_compare( $wp_version, '4.4', '>=' ) ) {
+			$out = get_post_meta( $id, 'meta_input_key', true );
 
-		$this->assertSame( TLN_Normalizer::normalize( $_POST['meta'][$meta_input_key_id]['value'] ), $out );
-		if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $_POST['meta'][$meta_input_key_id]['value'] ), $out );
+			$this->assertSame( TLN_Normalizer::normalize( $_POST['meta'][$meta_input_key_id]['value'] ), $out );
+			if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $_POST['meta'][$meta_input_key_id]['value'] ), $out );
+		}
 
 		$out = get_post_meta( $id, 'metakeyinput_key' . $decomposed_str, true );
 
