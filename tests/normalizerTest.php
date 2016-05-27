@@ -43,6 +43,12 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 		$tlnormalizer->no_normalizer = true;
 		$tlnormalizer->load_tln_normalizer_class();
 
+		error_log("phpversion( 'intl' )=" . phpversion( 'intl' ) );
+		ob_start();
+		phpinfo( INFO_MODULES );
+		$phpinfo_intl = implode( "\n", preg_filter( '/intl|icu|internat/i', '$0', explode( "\n", ob_get_clean() ) ) );
+		error_log("phpinfo_intl=$phpinfo_intl");
+
 		// Enable if using intl built with icu less than 56.1
 		self::$new_8_0_0_regex = '/' . implode( '|', array_map( __CLASS__.'::chr', self::$new_8_0_0 ) ) . '/';
 
