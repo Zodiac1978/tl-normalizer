@@ -158,7 +158,11 @@ class Tests_TLN_Post extends WP_UnitTestCase {
 		if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $_POST['metavalue'] ), $out );
 
 		$out = get_term_by( 'name', TLN_Normalizer::normalize( $tag1 ), 'post_tag' );
-		$this->assertInstanceOf( 'WP_Term', $out );
+		if ( class_exists( 'WP_Term' ) ) {
+			$this->assertInstanceOf( 'WP_Term', $out );
+		} else {
+			$this->assertTrue( is_object( $out ) );
+		}
 
 		// Update.
 
