@@ -172,16 +172,18 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 	 */
 	function test_args_compat( $string ) {
 
-		$forms = array( 0, -1, 6, -2, PHP_INT_MAX, -PHP_INT_MAX, Normalizer::NONE, Normalizer::NFD, Normalizer::NFKD, Normalizer::NFC, Normalizer::NFKD );
+		if ( class_exists( 'Normalizer' ) ) {
+			$forms = array( 0, -1, 6, -2, PHP_INT_MAX, -PHP_INT_MAX, Normalizer::NONE, Normalizer::NFD, Normalizer::NFKD, Normalizer::NFC, Normalizer::NFKD );
 
-		foreach ( $forms as $form ) {
-			$is_normalized = Normalizer::isNormalized( $string, $form );
-			$normalize = Normalizer::normalize( $string, $form );
-			$tln_is_normalized = TLN_Normalizer::isNormalized( $string, $form );
-			$tln_normalize = TLN_Normalizer::normalize( $string, $form );
+			foreach ( $forms as $form ) {
+				$is_normalized = Normalizer::isNormalized( $string, $form );
+				$normalize = Normalizer::normalize( $string, $form );
+				$tln_is_normalized = TLN_Normalizer::isNormalized( $string, $form );
+				$tln_normalize = TLN_Normalizer::normalize( $string, $form );
 
-			$this->assertSame( $is_normalized, $tln_is_normalized );
-			$this->assertSame( $normalize, $tln_normalize );
+				$this->assertSame( $is_normalized, $tln_is_normalized );
+				$this->assertSame( $normalize, $tln_normalize );
+			}
 		}
 	}
 
