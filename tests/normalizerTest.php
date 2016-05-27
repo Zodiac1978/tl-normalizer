@@ -372,27 +372,29 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 	function test_random() {
 		require_once dirname( dirname( __FILE__ ) ) . '/tools/functions.php';
 
-		// Some known problematics.
-		$strs = array(
-			"\xcc\x83\xc3\x92\xd5\x9b", // \u0303\u00d2\u055b
-			"\x72\x1c\xce\xaf", // r\u001c\u03af
-			"\xe0\xbd\xb6\xe0\xbe\x81", // \u0f76\u0f81
-		);
-		for ( $i = 0, $len = count( $strs ); $i < $len; $i++ ) {
-			$str = $strs[ $i ];
-			$this->assertSame( Normalizer::isNormalized( $str ), TLN_Normalizer::isNormalized( $str ) );
-			$this->assertSame( Normalizer::normalize( $str ), TLN_Normalizer::normalize( $str ) );
-		}
-
-		global $tln_nfc_maybes_or_reorders;
-		for ( $i = 0; $i < 42; $i++ ) {
-			$str = tln_utf8_rand_ratio_str( rand( 100, 100000 ), 0.5, $tln_nfc_maybes_or_reorders );
-			if ( self::$new_8_0_0_regex ) {
-				$str = preg_replace( self::$new_8_0_0_regex, '', $str );
+		if ( class_exists( 'Normalizer' ) ) {
+			// Some known problematics.
+			$strs = array(
+				"\xcc\x83\xc3\x92\xd5\x9b", // \u0303\u00d2\u055b
+				"\x72\x1c\xce\xaf", // r\u001c\u03af
+				"\xe0\xbd\xb6\xe0\xbe\x81", // \u0f76\u0f81
+			);
+			for ( $i = 0, $len = count( $strs ); $i < $len; $i++ ) {
+				$str = $strs[ $i ];
+				$this->assertSame( Normalizer::isNormalized( $str ), TLN_Normalizer::isNormalized( $str ) );
+				$this->assertSame( Normalizer::normalize( $str ), TLN_Normalizer::normalize( $str ) );
 			}
-			$this->assertSame( Normalizer::isNormalized( $str ), TLN_Normalizer::isNormalized( $str ) );
-			$this->assertSame( Normalizer::normalize( $str ), TLN_Normalizer::normalize( $str ) );
-			unset( $str );
+
+			global $tln_nfc_maybes_or_reorders;
+			for ( $i = 0; $i < 42; $i++ ) {
+				$str = tln_utf8_rand_ratio_str( rand( 100, 100000 ), 0.5, $tln_nfc_maybes_or_reorders );
+				if ( self::$new_8_0_0_regex ) {
+					$str = preg_replace( self::$new_8_0_0_regex, '', $str );
+				}
+				$this->assertSame( Normalizer::isNormalized( $str ), TLN_Normalizer::isNormalized( $str ) );
+				$this->assertSame( Normalizer::normalize( $str ), TLN_Normalizer::normalize( $str ) );
+				unset( $str );
+			}
 		}
 	}
 
