@@ -30,10 +30,9 @@
 class Tests_TLN_Normalizer extends WP_UnitTestCase {
 
 	static $normalizer_state = array();
-	static $icu_version = '';
-	static $missing_55_1 = array( 0xfa2e, 0xfa2f ); // Combining class additions missing from 6
-	static $missing_56_1 = array( 0x8e3, 0xa69e, /*0xa69f,*/ 0xfe2e, 0xfe2f, 0x111ca, 0x1172b, ); // Combining class additions missing from 7.0.0
+	static $new_8_0_0 = array( 0x8e3, 0xa69e, /*0xa69f,*/ 0xfe2e, 0xfe2f, 0x111ca, 0x1172b, ); // Combining class additions UCD 8.0.0 over 7.0.0
 	static $new_8_0_0_regex = '';
+	static $at_least_55_1 = false;
 	static $true = true;
 	static $false = false;
 
@@ -48,17 +47,12 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 		$dirname = dirname( dirname( __FILE__ ) );
 		require_once $dirname . '/tools/functions.php';
 
-		self::$icu_version = tln_icu_version();
+		$icu_version = tln_icu_version();
+		self::$at_least_55_1 = version_compare( $icu_version, '55.1', '>=' );
 
-		$missing = array();
-		if ( version_compare( self::$icu_version, '55.1', '<' ) ) {
-			$missing = array_merge( $missing, self::$missing_55_1 );
-		}
-		if ( version_compare( self::$icu_version, '56.1', '<' ) ) {
-			$missing = array_merge( $missing, self::$missing_56_1 );
-		}
-		if ( $missing ) {
-			self::$new_8_0_0_regex = '/' . implode( '|', array_map( __CLASS__.'::chr', $missing ) ) . '/';
+		if ( version_compare( $icu_version, '56.1', '<' ) ) {
+			// Enable if using intl built with icu less than 56.1
+			self::$new_8_0_0_regex = '/' . implode( '|', array_map( __CLASS__.'::chr', self::$new_8_0_0 ) ) . '/';
 		}
 
 		// Normalizer::isNormalized() returns an integer on HHVM and a boolean on PHP
@@ -312,22 +306,20 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 				$this->assertSame( $c[4], TLN_Normalizer::normalize( $c[4], TLN_Normalizer::NFC ) );
 				$this->assertSame( $c[4], TLN_Normalizer::normalize( $c[5], TLN_Normalizer::NFC ) );
 
-				if ( class_exists( 'Normalizer' ) ) {
+				if ( class_exists( 'Normalizer' ) && self::$at_least_55_1 ) {
 					if ( $c[2] !== $c[1] ) {
 						$this->assertSame( self::$false, TLN_Normalizer::isNormalized( $c[1], TLN_Normalizer::NFC ) );
 					}
 					if ( ! self::$new_8_0_0_regex || ! preg_match( self::$new_8_0_0_regex, $c[1] ) ) {
-						$this->assertSame( $normalize_n = Normalizer::normalize( $c[1], Normalizer::NFC ), $normalize_t = TLN_Normalizer::normalize( $c[1], TLN_Normalizer::NFC ), "$line_num: {$line}c[1]=" . bin2hex( $c[1] ) );
+						$this->assertSame( $normalize_n = Normalizer::normalize( $c[1], Normalizer::NFC ), $normalize_t = TLN_Normalizer::normalize( $c[1], TLN_Normalizer::NFC ), "$line_num: {$line}c[1]=" . bin2hex( $c[1] ) . ", normalize_n=" . bin2hex( $normalize_n ) . ", normalize_t=" . bin2hex( $normalize_t ) );
 					}
-					if ( version_compare( self::$icu_version, '55.1', '>=' ) ) {
-						$this->assertSame( Normalizer::normalize( $c[2], Normalizer::NFC ), TLN_Normalizer::normalize( $c[2], TLN_Normalizer::NFC ) );
-						$this->assertSame( Normalizer::normalize( $c[3], Normalizer::NFC ), TLN_Normalizer::normalize( $c[3], TLN_Normalizer::NFC ) );
-						if ( $c[2] !== $c[4] ) {
-							$this->assertSame( Normalizer::isNormalized( $c[4], Normalizer::NFC ), TLN_Normalizer::isNormalized( $c[4], TLN_Normalizer::NFC ) );
-						}
-						$this->assertSame( Normalizer::normalize( $c[4], Normalizer::NFC ), TLN_Normalizer::normalize( $c[4], TLN_Normalizer::NFC ) );
-						$this->assertSame( Normalizer::normalize( $c[5], Normalizer::NFC ), TLN_Normalizer::normalize( $c[5], TLN_Normalizer::NFC ) );
+					$this->assertSame( Normalizer::normalize( $c[2], Normalizer::NFC ), TLN_Normalizer::normalize( $c[2], TLN_Normalizer::NFC ) );
+					$this->assertSame( Normalizer::normalize( $c[3], Normalizer::NFC ), TLN_Normalizer::normalize( $c[3], TLN_Normalizer::NFC ) );
+					if ( $c[2] !== $c[4] ) {
+						$this->assertSame( Normalizer::isNormalized( $c[4], Normalizer::NFC ), TLN_Normalizer::isNormalized( $c[4], TLN_Normalizer::NFC ) );
 					}
+					$this->assertSame( Normalizer::normalize( $c[4], Normalizer::NFC ), TLN_Normalizer::normalize( $c[4], TLN_Normalizer::NFC ) );
+					$this->assertSame( Normalizer::normalize( $c[5], Normalizer::NFC ), TLN_Normalizer::normalize( $c[5], TLN_Normalizer::NFC ) );
 
 					if ( $last9_c1s ) {
 						shuffle( $last9_c1s );
