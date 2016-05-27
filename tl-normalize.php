@@ -531,6 +531,7 @@ class TLNormalizer {
 	function pre_post_tax_input( $arr ) {
 		if ( is_array( $arr ) ) {
 			foreach ( $arr as $taxonomy => $terms ) {
+				tln_debug( "terms=", $terms );
 				foreach ( $terms as $idx => $term ) {
 					if ( ! empty( $term ) && is_string( $term ) && ! ctype_digit( $term ) ) { // Exclude ids.
 						$arr[ $taxonomy ][ $idx ] = $this->tl_normalizer( $term );
