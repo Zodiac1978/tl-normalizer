@@ -58,7 +58,8 @@ class Tests_TLN_Tools extends WP_UnitTestCase {
 			/**/
 		);
 
-		foreach ( $arr as list( $c1, $c2, $expected ) ) {
+		foreach ( $arr as $item ) {
+			list( $c1, $c2, $expected ) = $item;
 			$ranges = array();
 			tln_utf8_4range( $ranges, $c1, $c2 );
 			$actual = tln_utf8_regex_alts( $ranges );
