@@ -586,7 +586,7 @@ class TLNormalizer {
 	 * Called on 'pre_update_option_$option' filter.
 	 * Called on individual options. Just passthru to pre_update_option().
 	 */
-	function pre_update_option_option( $value, $old_value, $option ) {
+	function pre_update_option_option( $value, $old_value, $option = null /*For WP < 4.3 compat*/ ) {
 		return $this->pre_update_option( $value, $option, $old_value ); // Note re-ordering of args.
 	}
 
