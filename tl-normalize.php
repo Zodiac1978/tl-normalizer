@@ -541,6 +541,7 @@ class TLNormalizer {
 	 */
 	function insert_user_meta( $meta, $user, $update ) {
 
+		tln_debug_log( $meta );
 		// Allow exclusion of keys.
 		$exclude_keys = array( 'nickname', 'description' ); // These are already covered by the 'pre_user_XXX' filters.
 		$exclude_keys = array_flip( apply_filters( 'tln_exclude_user_meta_keys', $exclude_keys, $meta, $user, $update ) );
