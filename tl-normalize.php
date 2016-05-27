@@ -531,10 +531,16 @@ class TLNormalizer {
 	function pre_post_tax_input( $arr ) {
 		if ( is_array( $arr ) ) {
 			foreach ( $arr as $taxonomy => $terms ) {
-				tln_debug_log( "terms=", $terms );
-				foreach ( $terms as $idx => $term ) {
+				if ( is_array( $terms ) ) {
+					foreach ( $terms as $idx => $term ) {
+						if ( ! empty( $term ) && is_string( $term ) && ! ctype_digit( $term ) ) { // Exclude ids.
+							$arr[ $taxonomy ][ $idx ] = $this->tl_normalizer( $term );
+						}
+					}
+				} else {
+					$term = $terms;
 					if ( ! empty( $term ) && is_string( $term ) && ! ctype_digit( $term ) ) { // Exclude ids.
-						$arr[ $taxonomy ][ $idx ] = $this->tl_normalizer( $term );
+						$arr[ $taxonomy ] = $this->tl_normalizer( $term );
 					}
 				}
 			}
