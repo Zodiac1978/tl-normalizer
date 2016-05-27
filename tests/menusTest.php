@@ -60,7 +60,6 @@ class Tests_TLN_Menus extends WP_UnitTestCase {
 
 		$id = wp_update_nav_menu_object( 0, $menu_data );
 
-		$this->assertNotWPError( $id );
 		$this->assertTrue( is_numeric( $id ) );
 		$this->assertTrue( $id > 0 );
 

@@ -60,7 +60,7 @@ class Tests_TLN_Term extends WP_UnitTestCase {
 
 		$result = wp_insert_term( $name, $cat, $args );
 
-		$this->assertNotWPError( $result );
+		$this->assertTrue( is_array( $result ) );
 		$this->assertTrue( is_numeric( $result['term_id'] ) );
 
 		$id = $result['term_id'];
