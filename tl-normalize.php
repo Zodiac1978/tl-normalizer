@@ -638,7 +638,9 @@ class TLNormalizer {
 
 		// Load IE8 Array.prototype.reduceRight polyfill for unorm.
 		wp_enqueue_script( 'tln-ie8', plugins_url( "js/ie8{$suffix}.js", __FILE__ ), array(), TLN_VERSION );
-		wp_script_add_data( 'tln-ie8', 'conditional', 'lt IE 9' );
+
+		global $wp_scripts; // For < 4.2 compat, don't use wp_script_add_data().
+		$wp_scripts->add_data( $handle, $key, $value );
 
 		// Load the javascript normalize polyfill https://github.com/walling/unorm
 		wp_enqueue_script( 'tln-unorm', plugins_url( "unorm/lib/unorm.js", __FILE__ ), array( 'tln-ie8' ), '1.4.1' ); // Note unorm doesn't come with minified so don't use.
