@@ -99,6 +99,16 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 		for ( $i = 0; $i < 0x80; $i++ ) {
 			$this->assertSame( true, in_array( chr( $i ), $ascii ) );
 		}
+
+		$prop = $rpn->getProperty( 'D' );
+		$prop->setAccessible( true );
+		$prop->setValue( null );
+
+		$prop = $rpn->getProperty( 'C' );
+		$prop->setAccessible( true );
+		$prop->setValue( null );
+
+        $this->assertSame( "\xc3\xbc", TLN_Normalizer::normalize( "u\xcc\x88" ) );
     }
 
     /**
@@ -119,6 +129,7 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 
         $this->assertSame( self::$true, TLN_Normalizer::isNormalized( $d, TLN_Normalizer::NFD ) );
 		$this->assertSame( self::$false, TLN_Normalizer::isNormalized( "u\xcc\x88", TLN_Normalizer::NFC ) ); // u umlaut.
+		$this->assertSame( self::$false, TLN_Normalizer::isNormalized( "u\xcc\x88\xed\x9e\xa0", TLN_Normalizer::NFC ) ); // u umlaut + Hangul
 
 		if ( class_exists( 'Normalizer' ) ) {
         	$this->assertSame( $d, Normalizer::normalize( $c, Normalizer::NFD ) );
@@ -133,6 +144,7 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 
         	$this->assertSame( self::$true, Normalizer::isNormalized( $d, Normalizer::NFD ) );
 			$this->assertSame( self::$false, Normalizer::isNormalized( "u\xcc\x88", Normalizer::NFC ) ); // u umlaut.
+			$this->assertSame( self::$false, Normalizer::isNormalized( "u\xcc\x88\xed\x9e\xa0", Normalizer::NFC ) ); // u umlaut + Hangul
 		}
     }
 
@@ -230,6 +242,13 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 		$this->assertSame( $encoding, mb_internal_encoding() );
 		$this->assertSame( "\xe2\x8e\xa1", TLN_Normalizer::normalize( "\xe2\x8e\xa1" ) );
 		$this->assertSame( $encoding, mb_internal_encoding() );
+		$this->assertSame( "\xc3\xbc", TLN_Normalizer::normalize( "u\xcc\x88" ) );
+		$this->assertSame( $encoding, mb_internal_encoding() );
+
+        $rpn = new ReflectionClass( 'TLN_Normalizer' );
+		$prop = $rpn->getProperty( 'mb_overload_string' );
+		$prop->setAccessible( true );
+		$prop->setValue( null );
 		$this->assertSame( "\xc3\xbc", TLN_Normalizer::normalize( "u\xcc\x88" ) );
 		$this->assertSame( $encoding, mb_internal_encoding() );
 

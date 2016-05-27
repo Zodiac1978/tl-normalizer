@@ -29,6 +29,9 @@ module.exports = function( grunt ) { //The wrapper function
 			convert:{
 				files: {
 					'README.md': 'readme.txt'
+				},
+				options: {
+					'screenshot_url': 'https://ps.w.org/{plugin}/assets/{screenshot}.png',
 				}
 			}
 		},

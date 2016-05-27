@@ -45,13 +45,13 @@ Sorry, but I don't have a clue. Maybe just a little bit.
 ## Screenshots ##
 
 ### 1. Correct transliteration if you enter the word directly ###
-![Correct transliteration if you enter the word directly](http://s.wordpress.org/extend/plugins/normalizer/screenshot-1.png)
+![Correct transliteration if you enter the word directly](https://ps.w.org/normalizer/assets/screenshot-1.png)
 
 ### 2. Missing transliteration for copy/pasted word from PDF ###
-![Missing transliteration for copy/pasted word from PDF](http://s.wordpress.org/extend/plugins/normalizer/screenshot-2.png)
+![Missing transliteration for copy/pasted word from PDF](https://ps.w.org/normalizer/assets/screenshot-2.png)
 
 ### 3. Error message from W3C ###
-![Error message from W3C](http://s.wordpress.org/extend/plugins/normalizer/screenshot-3.png)
+![Error message from W3C](https://ps.w.org/normalizer/assets/screenshot-3.png)
 
 
 ## Changelog ##
@@ -59,7 +59,7 @@ Sorry, but I don't have a clue. Maybe just a little bit.
 ### 2.0.6 ###
 * Move most of javascript into "js/tl-normalize.js".
 * Add Gruntfile.js, generating minifieds.
-* Move tests/test-*.php to tests/*Test.php for grunt-phpunit compatibility.
+* Move tests/test-xxx.php to tests/xxxTest.php for grunt-phpunit compatibility.
 * A few Normalizer optimizations.
 * Try to get travis working.
 

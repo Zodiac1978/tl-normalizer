@@ -53,7 +53,7 @@ Sorry, but I don't have a clue. Maybe just a little bit.
 = 2.0.6 =
 * Move most of javascript into "js/tl-normalize.js".
 * Add Gruntfile.js, generating minifieds.
-* Move tests/test-*.php to tests/*Test.php for grunt-phpunit compatibility.
+* Move tests/test-xxx.php to tests/xxxTest.php for grunt-phpunit compatibility.
 * A few Normalizer optimizations.
 * Try to get travis working.
 
