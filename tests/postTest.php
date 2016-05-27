@@ -172,6 +172,8 @@ class Tests_TLN_Post extends WP_UnitTestCase {
 			$meta_input_key_id = $wpdb->get_var( $wpdb->prepare( "SELECT meta_id FROM {$wpdb->postmeta} WHERE post_id = %d AND meta_key = %s", $id, 'meta_input_key' ) );
 			$this->assertTrue( is_numeric( $meta_input_key_id ) );
 			$this->assertTrue( $meta_input_key_id > 0 );
+		} else {
+			$meta_input_key_id = 1; // Dummy.
 		}
 
 		$metakeyinput_id = $wpdb->get_var( $wpdb->prepare( "SELECT meta_id FROM {$wpdb->postmeta} WHERE post_id = %d AND meta_key = %s", $id, 'metakeyinput_key' . $decomposed_str ) );

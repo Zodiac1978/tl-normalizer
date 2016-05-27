@@ -57,10 +57,11 @@ class Tests_TLN_User extends WP_UnitTestCase {
 		$_POST['role'] = 'subscriber';
 		$_POST['email'] = 'user1@example.com';
 		$_POST['user_login'] = 'user_login1'/* . $decomposed_str*/; // Can't use in user_login as validate_username() strips to ASCII.
+		$_POST['nickname'] = 'nickname1' . $decomposed_str;
+		$_POST['description'] = 'description' . $decomposed_str;
+		$_POST['display_name'] = 'display_name1' . $decomposed_str;
 		$_POST['first_name'] = 'first_name1' . $decomposed_str;
 		$_POST['last_name'] = 'last_name1' . $decomposed_str;
-		$_POST['nickname'] = 'nickname1' . $decomposed_str;
-		$_POST['display_name'] = 'display_name1' . $decomposed_str;
 		$_POST['pass1'] = $_POST['pass2'] = 'password' . $decomposed_str;
 		$_POST['aim'] = 'AIM' . $decomposed_str;
 
@@ -73,14 +74,16 @@ class Tests_TLN_User extends WP_UnitTestCase {
 		$user = get_user_by( 'id', $id );
 
 		$this->assertInstanceOf( 'WP_User', $user );
+		$this->assertSame( TLN_Normalizer::normalize( $_POST['nickname'] ), $user->nickname );
+		if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $_POST['nickname'] ), $user->nickname );
+		$this->assertSame( TLN_Normalizer::normalize( $_POST['description'] ), $user->description );
+		if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $_POST['description'] ), $user->description );
+		$this->assertSame( TLN_Normalizer::normalize( $_POST['display_name'] ), $user->display_name );
+		if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $_POST['display_name'] ), $user->display_name );
 		$this->assertSame( TLN_Normalizer::normalize( $_POST['first_name'] ), $user->first_name );
 		if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $_POST['first_name'] ), $user->first_name );
 		$this->assertSame( TLN_Normalizer::normalize( $_POST['last_name'] ), $user->last_name );
 		if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $_POST['last_name'] ), $user->last_name );
-		$this->assertSame( TLN_Normalizer::normalize( $_POST['nickname'] ), $user->nickname );
-		if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $_POST['nickname'] ), $user->nickname );
-		$this->assertSame( TLN_Normalizer::normalize( $_POST['display_name'] ), $user->display_name );
-		if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $_POST['display_name'] ), $user->display_name );
 		$this->assertTrue( wp_check_password( $_POST['pass1'], $user->user_pass ) ); // Not normalized.
 		$this->assertFalse( wp_check_password( TLN_Normalizer::normalize( $_POST['pass1'] ), $user->user_pass ) ); // Not normalized.
 		if ( class_exists( 'Normalizer' ) ) $this->assertFalse( wp_check_password( Normalizer::normalize( $_POST['pass1'] ), $user->user_pass ) ); // Not normalized.
