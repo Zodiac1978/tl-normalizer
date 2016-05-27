@@ -14,6 +14,13 @@ class Tests_TLN_Tools extends WP_UnitTestCase {
 		require_once $dirname . '/Symfony/tln_regex_alts.php';
 	}
 
+	function setUp() {
+		parent::setUp();
+		if ( ! method_exists( 'WP_UnitTestCase', 'wpSetUpBeforeClass' ) ) { // Hack for WP testcase.php versions prior to 4.4
+			self::wpSetUpBeforeClass();
+		}
+	}
+
 	/**
 	 * @ticket tln_utf8_regex_alts
 	 */

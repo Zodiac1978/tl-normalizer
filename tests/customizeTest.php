@@ -26,6 +26,20 @@ class Tests_TLN_Customize extends WP_UnitTestCase {
 		list( $tlnormalizer->dont_js, $tlnormalizer->dont_filter, $tlnormalizer->no_normalizer ) = self::$normalizer_state;
 	}
 
+	function setUp() {
+		parent::setUp();
+		if ( ! method_exists( 'WP_UnitTestCase', 'wpSetUpBeforeClass' ) ) { // Hack for WP testcase.php versions prior to 4.4
+			self::wpSetUpBeforeClass();
+		}
+	}
+
+	function tearDown() {
+		parent::tearDown();
+		if ( ! method_exists( 'WP_UnitTestCase', 'wpSetUpBeforeClass' ) ) { // Hack for WP testcase.php versions prior to 4.4
+			self::wpTearDownAfterClass();
+		}
+	}
+
     /**
 	 * @ticket tln_customize_customize
      */
