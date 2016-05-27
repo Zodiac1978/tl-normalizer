@@ -93,10 +93,13 @@ class Tests_TLN_User extends WP_UnitTestCase {
 		$this->assertSame( TLN_Normalizer::normalize( $_POST['nickname'] ), $out );
 		if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $_POST['nickname'] ), $out );
 
-		$out = get_user_meta( $id, 'aim', true );
+		global $wp_version;
+		if ( version_compare( $wp_version, '4.4', '>=' ) ) {
+			$out = get_user_meta( $id, 'aim', true );
 
-		$this->assertSame( TLN_Normalizer::normalize( $_POST['aim'] ), $out );
-		if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $_POST['aim'] ), $out );
+			$this->assertSame( TLN_Normalizer::normalize( $_POST['aim'] ), $out );
+			if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $_POST['aim'] ), $out );
+		}
 	}
 
 	function user_contactmethods_filter( $methods, $user = null ) {

@@ -52,7 +52,8 @@ class TLNormalizer {
 	);
 
 	var $user_filters = array(
-		'pre_user_login', 'pre_user_nicename', 'pre_user_url', 'pre_user_email', 'pre_user_nickname', 'pre_user_first_name', 'pre_user_last_name', 'pre_user_display_name', 'pre_user_description',
+		'pre_user_login', 'pre_user_nicename', 'pre_user_url', 'pre_user_email', 'pre_user_nickname',
+		'pre_user_first_name', 'pre_user_last_name', 'pre_user_display_name', 'pre_user_description',
 	);
 
 	var $term_filters = array(
@@ -247,13 +248,13 @@ class TLNormalizer {
 					add_filter( $filter, array( $this, 'tl_normalizer' ), $this->priority );
 				}
 
-				tln_debug_log("POST=", $_POST);
 				global $wp_version;
 				if ( version_compare( $wp_version, '4.4', '>=' ) ) { // 'insert_user_meta' only available for WP >= 4.4
 					// Normalize the user meta. Some are done already by the $user_filters - 'pre_user_nickname' etc.
 					// Also, we can (mis-)use the 'insert_user_meta' filter to add sanitize filters for contact methods (using the passed-in $user).
 					add_filter( 'insert_user_meta', array( $this, 'insert_user_meta' ), $this->priority, 3 );
 				} else {
+					// TODO: Anything possible?
 				}
 			}
 
@@ -546,7 +547,6 @@ class TLNormalizer {
 	 */
 	function insert_user_meta( $meta, $user, $update ) {
 
-		tln_debug_log( $meta );
 		// Allow exclusion of keys.
 		$exclude_keys = array( 'nickname', 'first_name', 'last_name', 'description' ); // These are already covered by the 'pre_user_XXX' filters.
 		$exclude_keys = array_flip( apply_filters( 'tln_exclude_user_meta_keys', $exclude_keys, $meta, $user, $update ) );
