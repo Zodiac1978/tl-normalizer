@@ -100,21 +100,27 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 			$this->assertSame( true, in_array( chr( $i ), $ascii ) );
 		}
 
-		$prop = $rpn->getProperty( 'D' );
-		$prop->setAccessible( true );
-		$prop->setValue( null );
+		if ( version_compare( PHP_VERSION, '5.3', '>=' ) ) { // For availability of ReflectionClass::setAccessible()
+			$prop = $rpn->getProperty( 'D' );
+			$prop->setAccessible( true );
+			$prop->setValue( null );
 
-		$prop = $rpn->getProperty( 'C' );
-		$prop->setAccessible( true );
-		$prop->setValue( null );
+			$prop = $rpn->getProperty( 'C' );
+			$prop->setAccessible( true );
+			$prop->setValue( null );
 
-        $this->assertSame( "\xc3\xbc", TLN_Normalizer::normalize( "u\xcc\x88" ) );
+			$this->assertSame( "\xc3\xbc", TLN_Normalizer::normalize( "u\xcc\x88" ) );
+		}
     }
 
     /**
 	 * @ticket tln_is_normalized
      */
     function test_is_normalized() {
+
+		if ( ! class_exists( 'TLN_Normalizer' ) ) { // Hack for WP testcase.php versions prior to 4.4
+			self::wpSetUpBeforeClass();
+		}
 
         $c = 'déjà';
         $d = TLN_Normalizer::normalize( $c, TLN_Normalizer::NFD );
@@ -245,12 +251,14 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 		$this->assertSame( "\xc3\xbc", TLN_Normalizer::normalize( "u\xcc\x88" ) );
 		$this->assertSame( $encoding, mb_internal_encoding() );
 
-        $rpn = new ReflectionClass( 'TLN_Normalizer' );
-		$prop = $rpn->getProperty( 'mb_overload_string' );
-		$prop->setAccessible( true );
-		$prop->setValue( null );
-		$this->assertSame( "\xc3\xbc", TLN_Normalizer::normalize( "u\xcc\x88" ) );
-		$this->assertSame( $encoding, mb_internal_encoding() );
+		if ( version_compare( PHP_VERSION, '5.3', '>=' ) ) { // For availability of ReflectionClass::setAccessible()
+			$rpn = new ReflectionClass( 'TLN_Normalizer' );
+			$prop = $rpn->getProperty( 'mb_overload_string' );
+			$prop->setAccessible( true );
+			$prop->setValue( null );
+			$this->assertSame( "\xc3\xbc", TLN_Normalizer::normalize( "u\xcc\x88" ) );
+			$this->assertSame( $encoding, mb_internal_encoding() );
+		}
 
 		mb_internal_encoding( $mb_internal_encoding );
 	}
