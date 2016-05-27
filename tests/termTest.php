@@ -67,7 +67,7 @@ class Tests_TLN_Term extends WP_UnitTestCase {
 		$this->assertTrue( $id > 0 );
 
 		// fetch the term and make sure it matches
-		$out = get_term( $id );
+		$out = get_term( $id, $cat );
 		$this->assertInstanceOf( 'WP_Term', $out );
 
 		$this->assertSame( TLN_Normalizer::normalize( $name ), $out->name );

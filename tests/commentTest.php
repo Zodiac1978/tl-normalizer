@@ -63,7 +63,11 @@ class Tests_TLN_Comment extends WP_UnitTestCase {
 		$this->assertSame( 1, $update );
 
 		$comment = get_comment( $comment_id );
-		$this->assertInstanceOf( 'WP_Comment', $comment );
+		if ( class_exists( 'WP_Comment' ) ) {
+			$this->assertInstanceOf( 'WP_Comment', $comment );
+		} else {
+			$this->assertTrue( is_object( $comment ) );
+		}
 		$this->assertSame( TLN_Normalizer::normalize( $updated_comment_text ), $comment->comment_content );
 		if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $updated_comment_text ), $comment->comment_content );
 	}
