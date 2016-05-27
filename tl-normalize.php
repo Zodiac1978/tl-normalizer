@@ -594,7 +594,7 @@ class TLNormalizer {
 	 * Called on 'sanitize_option_$option' filter.
 	 * For date/time format ajax preview. Just passthru to tl_normalizer().
 	 */
-	function sanitize_option_option( $value, $option, $original_value ) {
+	function sanitize_option_option( $value, $option, $original_value = null /*For WP < 4.3 compat*/ ) {
 		return $this->tl_normalizer( $value );
 	}
 

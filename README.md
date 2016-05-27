@@ -2,7 +2,7 @@
 **Contributors:** zodiac1978  
 **Donate link:** https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=LCH9UVV7RKDFY  
 **Tags:** Unicode, Normalization, Form C, Unicode Normalization Form C, Normalize, Normalizer  
-**Requires at least:** 4.3.8  
+**Requires at least:** 4.2.8  
 **Tested up to:** 4.5.2  
 **Stable tag:** 2.0.6  
 **License:** GPLv2 or later  
