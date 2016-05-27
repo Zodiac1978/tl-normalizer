@@ -70,16 +70,18 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 	 */
     function test_constants() {
 
-        $rpn = new ReflectionClass( 'TLN_Normalizer' );
-        $rin = new ReflectionClass( 'Normalizer' );
+		if ( class_exists( 'Normalizer' ) ) {
+			$rpn = new ReflectionClass( 'TLN_Normalizer' );
+			$rin = new ReflectionClass( 'Normalizer' );
 
-        $rpn = $rpn->getConstants();
-        $rin = $rin->getConstants();
+			$rpn = $rpn->getConstants();
+			$rin = $rin->getConstants();
 
-        ksort( $rpn );
-        ksort( $rin );
+			ksort( $rpn );
+			ksort( $rin );
 
-        $this->assertSame( $rin, $rpn );
+			$this->assertSame( $rin, $rpn );
+		}
     }
 
 	/**
