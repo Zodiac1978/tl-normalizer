@@ -128,6 +128,10 @@ class Tests_TLN_TL_Normalize extends WP_UnitTestCase {
 		$expected = 'Content' . $composed_str;
 
 		$tln = new TLNormalizer();
+		$this->assertFalse( TLNormalizer::$not_compat );
+		$this->assertFalse( $tln->dont_js );
+		$this->assertFalse( $tln->dont_paste );
+		$this->assertFalse( $tln->dont_filter );
 		$this->assertFalse( $tln->no_normalizer );
 
 		$out = $tln->tl_normalizer( $content );
@@ -154,15 +158,34 @@ class Tests_TLN_TL_Normalize extends WP_UnitTestCase {
 
 		$wp_filter = array();
 
+		TLNormalizer::$dirname = null;
 		TLNormalizer::$plugin_basename = null;
+
+		global $pagenow;
+		$pagenow = 'tools.php';
+		set_current_screen( $pagenow );
+		$_REQUEST['page'] = TLN_DB_CHECK_MENU_SLUG;
 
 		$tln = new TLNormalizer();
 
 		$tln->activation_check();
 
-		$this->assertTrue( $tln->compatible_version() );
-		$this->assertSame( 10, has_filter( 'admin_init', array( $tln, 'check_version' ) ) );
+		$this->assertTrue( $tln->check_version() );
+		$this->assertSame( 10, has_filter( 'admin_init', array( $tln, 'admin_init' ) ) );
 		$this->assertSame( 10, has_filter( 'init', array( $tln, 'init' ) ) );
+
+		do_action( 'init' );
+
+		TLNormalizer::$doing_ajax = true;
+
+		do_action( 'admin_init' );
+
+		$this->assertSame( 10, has_filter( 'wp_ajax_tln_db_check_list_bulk', array( $tln, 'wp_ajax_tln_db_check_list_bulk' ) ) );
+		$this->assertSame( 10, has_filter( 'wp_ajax_tln_db_check_list_page', array( $tln, 'wp_ajax_tln_db_check_list_page' ) ) );
+		$this->assertSame( 10, has_filter( 'wp_ajax_tln_db_check_list_sort', array( $tln, 'wp_ajax_tln_db_check_list_sort' ) ) );
+		$this->assertSame( 10, has_filter( 'wp_ajax_tln_db_check_list_screen_options', array( $tln, 'wp_ajax_tln_db_check_list_screen_options' ) ) );
+
+		TLNormalizer::$doing_ajax = null;
 
 		TLNormalizer::$not_compat = true;
 		TLNormalizer::$plugin_basename = WP_PLUGIN_DIR . '/normalizer/tl-normalize.php';
@@ -171,8 +194,8 @@ class Tests_TLN_TL_Normalize extends WP_UnitTestCase {
 
 		$tln = new TLNormalizer();
 
-		$this->assertFalse( $tln->compatible_version() );
-		$this->assertSame( 10, has_filter( 'admin_init', array( $tln, 'check_version' ) ) );
+		$this->assertFalse( $tln->check_version() );
+		$this->assertSame( 10, has_filter( 'admin_init', array( $tln, 'admin_init' ) ) );
 		$this->assertFalse( has_filter( 'init', array( $tln, 'init' ) ) );
 
 		$old_plugins = $current = get_site_option( 'active_sitewide_plugins', array() );
@@ -193,7 +216,7 @@ class Tests_TLN_TL_Normalize extends WP_UnitTestCase {
 		$out = ob_get_clean();
 		$this->assertTrue( false !== stripos( $out, 'deactivated' ) );
 
-		add_filter( 'wp_die_handler', array( $this, 'get_wp_die_handler' ) );
+		add_filter( 'wp_die_handler', array( $this, 'get_wp_die_handler' ), 10 );
 		$out = '';
 		try {
 			$tln->activation_check();
@@ -203,16 +226,39 @@ class Tests_TLN_TL_Normalize extends WP_UnitTestCase {
 		}
 		$this->assertTrue( false !== stripos( $out, 'activated' ) );
 
-		update_option( 'blog_charset', 'latin1' );
 		TLNormalizer::$not_compat = false;
+		global $wp_version;
+		$old_wp_version = $wp_version;
+		$wp_version = '3.9';
+
+		$wp_filter = array();
+
+		$tln = new TLNormalizer();
+		$this->assertFalse( TLNormalizer::tested_wp_version() );
+
+		$tln->activation_check();
+		$admin_notices_filter = is_network_admin() ? 'network_admin_notices' : ( is_user_admin() ? 'user_admin_notices' : 'admin_notices' );
+		$this->assertSame( 10, has_filter( $admin_notices_filter, array( 'TLNormalizer', 'untested_notice' ) ) );
+
+		ob_start();
+		do_action( $admin_notices_filter );
+		$out = ob_get_clean();
+		$this->assertTrue( false !== stripos( $out, 'untested' ) );
+
+		$wp_version = $old_wp_version;
+
+		$old_blog_charset = get_option( 'blog_charset' );
+		update_option( 'blog_charset', 'latin1' );
 
 		$tln = new TLNormalizer();
 
-		$this->assertSame( 10, has_filter( 'admin_init', array( $tln, 'check_version' ) ) );
+		$this->assertSame( 10, has_filter( 'admin_init', array( $tln, 'admin_init' ) ) );
 		$this->assertFalse( has_filter( 'init', array( $tln, 'init' ) ) );
 
+		// Restore.
 		$wp_filter = $old_wp_filter;
 		update_site_option( 'active_sitewide_plugins', $old_plugins );
+		update_option( 'blog_charset', $old_blog_charset );
 	}
 
 	/**
@@ -281,7 +327,31 @@ class Tests_TLN_TL_Normalize extends WP_UnitTestCase {
 
 			array( null, 'customize', 'customize' ), // Customizer preview.
 			array( null, 'customize_save', 'customize_save' ), // Customizer update.
+
+			array( 'link.php', null, 'link' ), // Edit link.
+			array( 'link-add.php', null, 'link' ), // Add link.
 		);
 	}
 
+	/**
+	 * @ticket tln_tl_normalize_php
+	 */
+	function test_tl_normalize_php() {
+		global $pagenow;
+		$pagenow = 'index.php';
+		set_current_screen( $pagenow );
+
+		$this->assertTrue( is_admin() ) ;
+
+		global $tlnormalizer;
+		$old_tlnormalizer = $tlnormalizer;
+
+		$file = dirname( dirname( __FILE__ ) ) . '/' . 'tl-normalize.php';
+		require $file;
+
+		$tlnormalizer = $old_tlnormalizer; // Restore first before asserting so as not to mess up other tests on failure.
+
+		$this->assertSame( 10, has_filter( 'activate_' . plugin_basename( $file ), array( 'TLNormalizer', 'activation_check' ) ) );
+		//$this->assertTrue( is_textdomain_loaded( 'normalizer' ) ); Doesn't load as running in development directory.
+	}
 }

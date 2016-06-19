@@ -264,20 +264,6 @@ function tln_utf8_regex_alts( $ranges ) {
 }
 
 /**
- * Strip newlines callback.
- */
-function tln_get_cb( $el ) {
-	return rtrim( $el, "\r" );
-}
-
-/**
- * Recursive version of array_map(). From http://php.net/manual/en/function.array-map.php#116938
- */
-function tln_array_map_recursive( $callback, $array ) {
-	return filter_var( $array, FILTER_CALLBACK, array( 'options' => $callback ) );
-}
-
-/**
  * Strip any invalid UTF-8 sequences from string.
  */
 function tln_strip_invalid_utf8( $string ) {
@@ -466,4 +452,32 @@ function tln_icu_version() {
 		}
 	}
 	return false;
+}
+
+/**
+ * Strip newlines callback.
+ */
+function tln_get_cb( $el ) {
+	return rtrim( $el, "\r" );
+}
+
+/**
+ * Recursive version of array_map(). From http://php.net/manual/en/function.array-map.php#116938
+ */
+function tln_array_map_recursive( $callback, $array ) {
+	return filter_var( $array, FILTER_CALLBACK, array( 'options' => $callback ) );
+}
+
+/**
+ * Version of wp_list_pluck that allows for unset fields.
+ */
+function tln_list_pluck( $list, $field ) {
+	foreach ( $list as $key => $value ) {
+		if ( is_object( $value ) ) {
+			$list[ $key ] = isset( $value->$field ) ? $value->$field : null;
+		} else {
+			$list[ $key ] = isset( $value[ $field ] ) ? $value[ $field ] : null;
+		}
+	}
+	return array_filter( $list );
 }

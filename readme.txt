@@ -2,15 +2,13 @@
 Contributors: zodiac1978
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=LCH9UVV7RKDFY
 Tags: Unicode, Normalization, Form C, Unicode Normalization Form C, Normalize, Normalizer
-Requires at least: 4.1.11
+Requires at least: 4.0.11
 Tested up to: 4.5.2
-Stable tag: 2.0.6
+Stable tag: 2.0.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Normalizes UTF-8 input to Normalization Form C.
-
-[![Build Status](https://travis-ci.org/gitlost/tl-normalizer.png?branch=master)](https://travis-ci.org/gitlost/tl-normalizer)
+Nörmalizes UTF-8 input to Normalization Form C.
 
 == Description ==
 
@@ -51,6 +49,12 @@ Sorry, but I don't have a clue. Maybe just a little bit.
 3. Error message from W3C
 
 == Changelog ==
+
+= 2.0.7 =
+* Add database check tool.
+* Link Manager support, bug fixes.
+* Make compatible enough that travis passes PHP unit tests for PHP 7, 5.6, 5.2 and WP at least 4.0.11.
+* Some more PHP unit tests.
 
 = 2.0.6 =
 * Move most of javascript into "js/tl-normalize.js".
@@ -96,3 +100,8 @@ Sorry, but I don't have a clue. Maybe just a little bit.
 
 = 1.0.0 =
 * Initial release
+
+== Upgrade Notice ==
+
+== 2.0.7 ==
+For normalization of pasted text and fuller normalization of all data.

@@ -30,7 +30,7 @@ error_log( "$basename: reading file=$file" );
 // Read the file.
 
 if ( false === ( $get = file_get_contents( $file ) ) ) {
-	/* translators: takes file name */
+	/* translators: %s: file name */
 	$error = sprintf( __( 'Could not read derived combining class file "%s"', 'normalizer' ), $file );
 	error_log( $error );
 	return $error;

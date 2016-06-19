@@ -41,6 +41,7 @@ class Tests_TLN_Term extends WP_UnitTestCase {
 	}
 
     /**
+	 * @ticket tln_term_term
      */
 	function test_term() {
 		$this->assertTrue( is_admin() ) ;
@@ -52,30 +53,30 @@ class Tests_TLN_Term extends WP_UnitTestCase {
 
 		$decomposed_str = "u\xcc\x88"; // u umlaut.
 
-		$name = 'term name ' . $decomposed_str;
+		$name1 = 'Cat name ' . $decomposed_str;
 		$args = array(
-			'description' => 'Term description ' . $decomposed_str,
+			'description' => 'Cat description ' . $decomposed_str,
 		);
-		$cat = 'category';
+		$tax1 = 'category';
 
-		$result = wp_insert_term( $name, $cat, $args );
+		$result = wp_insert_term( $name1, $tax1, $args );
 
 		$this->assertTrue( is_array( $result ) );
 		$this->assertTrue( is_numeric( $result['term_id'] ) );
 
-		$id = $result['term_id'];
-		$this->assertTrue( $id > 0 );
+		$id1 = $result['term_id'];
+		$this->assertTrue( $id1 > 0 );
 
-		// fetch the term and make sure it matches
-		$out = get_term( $id, $cat );
+		// Fetch the term and make sure it matches.
+		$out = get_term( $id1, $tax1 );
 		if ( class_exists( 'WP_Term' ) ) {
 			$this->assertInstanceOf( 'WP_Term', $out );
 		} else {
 			$this->assertTrue( is_object( $out ) );
 		}
 
-		$this->assertSame( TLN_Normalizer::normalize( $name ), $out->name );
-		if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $name ), $out->name );
+		$this->assertSame( TLN_Normalizer::normalize( $name1 ), $out->name );
+		if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $name1 ), $out->name );
 		$this->assertSame( TLN_Normalizer::normalize( $args['description'] ), $out->description );
 		if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $args['description'] ), $out->description );
 	}

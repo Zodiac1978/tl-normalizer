@@ -35,6 +35,7 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 	static $at_least_55_1 = false;
 	static $true = true;
 	static $false = false;
+	static $doing_coverage = false;
 
 	static function wpSetUpBeforeClass() {
 		global $tlnormalizer;
@@ -57,6 +58,9 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 
 		// Normalizer::isNormalized() returns an integer on HHVM and a boolean on PHP
 		list( self::$true, self::$false ) = defined( 'HHVM_VERSION' ) ? array( 1, 0 ) : array( true, false );
+
+		global $argv;
+		self::$doing_coverage = ! empty( preg_grep( '/--coverage/', $argv ) );
 	}
 
 	static function wpTearDownAfterClass() {
@@ -317,10 +321,14 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 		$last9_c1s = array();
 		$last_x = 0;
 		$in_part1 = false;
+		global $line_num;
         foreach ( $t as $line_num => $line ) {
 			$line_num++;
-			if ( 0 === strpos( $line, '@Part' ) ) {
-				$in_part1 = ( 0 === strpos( $line, '@Part1 ' ) );
+			if ( '@Part' === substr( $line, 0, 5 ) ) {
+				$in_part1 = ( '@Part1 ' === substr( $line, 0, 7 ) );
+				continue;
+			}
+			if ( self::$doing_coverage && $in_part1 ) { // Shorten lengthy tests if doing code coverage.
 				continue;
 			}
             $t = explode( '#', $line );
@@ -424,6 +432,7 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 				$this->assertSame( Normalizer::normalize( $str ), TLN_Normalizer::normalize( $str ) );
 			}
 
+			$num_tests = self::$doing_coverage ? 1 : 42; // Shorten lengthy tests if doing code coverage.
 			global $tln_nfc_maybes_or_reorders;
 			for ( $i = 0; $i < 42; $i++ ) {
 				$str = tln_utf8_rand_ratio_str( rand( 100, 100000 ), 0.5, $tln_nfc_maybes_or_reorders );

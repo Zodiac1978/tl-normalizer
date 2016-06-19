@@ -1,32 +1,31 @@
+[![Build Status](https://travis-ci.org/gitlost/tl-normalizer.png?branch=master)](https://travis-ci.org/gitlost/tl-normalizer)
 # Normalizer #
-**Contributors:** zodiac1978  
+**Contributors:** [zodiac1978](https://profiles.wordpress.org/zodiac1978)  
 **Donate link:** https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=LCH9UVV7RKDFY  
 **Tags:** Unicode, Normalization, Form C, Unicode Normalization Form C, Normalize, Normalizer  
-**Requires at least:** 4.1.11  
+**Requires at least:** 4.0.11  
 **Tested up to:** 4.5.2  
-**Stable tag:** 2.0.6  
+**Stable tag:** 2.0.7  
 **License:** GPLv2 or later  
 **License URI:** http://www.gnu.org/licenses/gpl-2.0.html  
 
-Normalizes UTF-8 input to Normalization Form C.
-
-[![Build Status](https://travis-ci.org/gitlost/tl-normalizer.png?branch=master)](https://travis-ci.org/gitlost/tl-normalizer)
+Nörmalizes UTF-8 input to Normalization Form C.
 
 ## Description ##
 
-**For everyone getting this warning from W3C validator:** "Text run is not in Unicode Normalization Form C."  
+For everyone getting this warning from W3C validator: "Text run is not in Unicode Normalization Form C."
 
-**See:** http://www.w3.org/International/docs/charmod-norm/#choice-of-normalization-form  
+See: http://www.w3.org/International/docs/charmod-norm/#choice-of-normalization-form
 
 For best performance have the PHP Internationalization extension "intl" installed, which includes the PHP class Normalizer.
 
-**See:** http://php.net/manual/en/intro.intl.php and http://php.net/manual/en/intl.installation.php  
+See: http://php.net/manual/en/intro.intl.php and http://php.net/manual/en/intl.installation.php
 
 However the claim is that this version should work without the PHP Internationalization extension being installed, or if your installation
 is without UTF-8 for PCRE, or if you're running PHP 5.2, or if you're using IE8...
 
-**See:** http://php.net/manual/en/normalizer.normalize.php  
-**See also:** https://core.trac.wordpress.org/ticket/30130  
+See: http://php.net/manual/en/normalizer.normalize.php
+See also: https://core.trac.wordpress.org/ticket/30130
 
 ## Installation ##
 
@@ -57,6 +56,12 @@ Sorry, but I don't have a clue. Maybe just a little bit.
 
 
 ## Changelog ##
+
+### 2.0.7 ###
+* Add database check tool.
+* Link Manager support, bug fixes.
+* Make compatible enough that travis passes PHP unit tests for PHP 7, 5.6, 5.2 and WP at least 4.0.11.
+* Some more PHP unit tests.
 
 ### 2.0.6 ###
 * Move most of javascript into "js/tl-normalize.js".
@@ -102,3 +107,8 @@ Sorry, but I don't have a clue. Maybe just a little bit.
 
 ### 1.0.0 ###
 * Initial release
+
+## Upgrade Notice ##
+
+## 2.0.7 ##
+For normalization of pasted text and fuller normalization of all data.

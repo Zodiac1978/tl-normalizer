@@ -6,9 +6,10 @@
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-if ( WP_DEBUG ) :
+if ( ! defined( 'TLN_DEBUG' ) ) define( 'TLN_DEBUG', defined( 'WP_DEBUG' ) ? WP_DEBUG : false );
 
-if ( ! defined( 'TLN_DEBUG' ) ) define( 'TLN_DEBUG', WP_DEBUG );
+if ( TLN_DEBUG ) :
+
 if ( ! defined( 'TLN_DEBUG_PRINT_LIMIT' ) ) define( 'TLN_DEBUG_PRINT_LIMIT', 256 );
 
 if ( ! defined( 'WP_CONTENT_DIR' ) ) define( 'WP_CONTENT_DIR', '' );
@@ -51,7 +52,7 @@ function tln_debug_trace( $trace, $func_get_args ) {
 
 	$ret[] = $file . ':' . $line . ' ' . $function . '(' . tln_print_r( $function_args ) . ') '; // Limit $function_args length.
 
-	foreach ( $func_get_args as $func_get_arg ) $ret[] = is_array( $func_get_arg ) || is_object( $func_get_arg ) ? tln_print_r( $func_get_arg ) : $func_get_arg;
+	foreach ( $func_get_args as $func_get_arg ) $ret[] = is_array( $func_get_arg ) || is_object( $func_get_arg ) ? print_r( $func_get_arg, true ) : $func_get_arg;
 
 	return $ret;
 }
@@ -185,6 +186,7 @@ function tln_debug_log() { return ''; }
 function tln_backtrace( $offset = 0, $length = null ) { return ''; }
 function tln_print_r( $var ) { return ''; }
 function tln_print_r_limit_cb( $str ) { return ''; }
+function tln_print_r_hex( $var ) { return ''; }
 function tln_dump( $var, $format = false ) { return ''; }
 function tln_bin2hex( $var ) { return ''; }
 function tln_format_bytes( $bytes, $precision = 2 ) { return ''; }

@@ -27,7 +27,7 @@ error_log( "$basename: reading file=$file" );
 // Read the file.
 
 if ( false === ( $get = file_get_contents( $file ) ) ) {
-	/* translators: takes file name */
+	/* translators: %s: file name */
 	$error = sprintf( __( 'Could not read UCD derived normalization properties file "%s"', 'normalizer' ), $file );
 	error_log( "$basename: ERROR: $error" );
 	return $error;
@@ -116,7 +116,7 @@ foreach ( $lines as $line ) {
 	}
 }
 if ( count( $haves ) !== count( $idx_strs ) ) {
-	/* translators: takes file name */
+	/* translators: %s: file name */
 	$error = sprintf( __( 'Missing NO or MAYBE codepoints in UCD derived normalization properties file "%s"', 'normalizer' ), $file );
 	error_log( "$basename: ERROR: $error" );
 	return $error;
@@ -131,7 +131,7 @@ error_log( "$basename: reading file=$file" );
 // Read the file.
 
 if ( false === ( $get = file_get_contents( $file ) ) ) {
-	/* translators: takes file name */
+	/* translators: %s: file name */
 	$error = sprintf( __( 'Could not read derived combining class file "%s"', 'normalizer' ), $file );
 	error_log( $error );
 	return $error;
@@ -186,8 +186,7 @@ foreach ( $lines as $line ) {
 
 // Put maybes and reorders in one regex.
 $codepoints['nfc_maybes_reorders'] = array_values( array_unique( array_merge( $codepoints['nfc_maybes'], $codepoints['reorders'] ) ) );
-// 
-//$hangul_codepoints = array( 0xac00, 0xd7a3 );
+// Put noes, maybes and reorders in one regex.
 $codepoints['nfc_noes_maybes_reorders'] = array_values( array_unique( array_merge( $codepoints['nfc_noes'], $codepoints['nfc_maybes_reorders'] ) ) );
 
 $regex_alts = array();

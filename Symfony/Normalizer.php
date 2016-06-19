@@ -27,27 +27,27 @@
  */
 // gitlost begin
 // See https://www.w3.org/International/questions/qa-forms-utf-8
-if ( ! defined( 'TLN_REGEX_IS_VALID_UTF8' ) ) {
-	define( 'TLN_REGEX_IS_VALID_UTF8',
-				'/\A(?:
-				  [\x00-\x7f]                                     # ASCII
-				| [\xc2-\xdf][\x80-\xbf]                          # non-overlong 2-byte
-				| \xe0[\xa0-\xbf][\x80-\xbf]                      # excluding overlongs
-				| [\xe1-\xec\xee\xef][\x80-\xbf][\x80-\xbf]       # straight 3-byte
-				| \xed[\x80-\x9f][\x80-\xbf]                      # excluding surrogates
-				| \xf0[\x90-\xbf][\x80-\xbf][\x80-\xbf]           # planes 1-3
-				| [\xf1-\xf3][\x80-\xbf][\x80-\xbf][\x80-\xbf]    # planes 4-15
-				| \xf4[\x80-\x8f][\x80-\xbf][\x80-\xbf]           # plane 16
-				)*+\z/x'
-	);
-}
+define( 'TLN_REGEX_IS_VALID_UTF8',
+			'/\A(?:
+			  [\x00-\x7f]                                     # ASCII
+			| [\xc2-\xdf][\x80-\xbf]                          # non-overlong 2-byte
+			| \xe0[\xa0-\xbf][\x80-\xbf]                      # excluding overlongs
+			| [\xe1-\xec\xee\xef][\x80-\xbf][\x80-\xbf]       # straight 3-byte
+			| \xed[\x80-\x9f][\x80-\xbf]                      # excluding surrogates
+			| \xf0[\x90-\xbf][\x80-\xbf][\x80-\xbf]           # planes 1-3
+			| [\xf1-\xf3][\x80-\xbf][\x80-\xbf][\x80-\xbf]    # planes 4-15
+			| \xf4[\x80-\x8f][\x80-\xbf][\x80-\xbf]           # plane 16
+			)*+\z/x'
+);
+
 if ( ! defined( 'TLN_REGEX_ALTS_NFC_NOES' ) ) {
 	require dirname( __FILE__ ) . '/tln_regex_alts.php';
-	// (Possibly) unstable code point(s) (or end of string) proceeded by a stable code point (or start of string). See http://unicode.org/reports/tr15/#Stable_Code_Points
-	define( 'TLN_REGEX_NFC_SUBNORMALIZE', '/(?:\A|[\x00-\x7f]|(?:[\xc2-\xdf]|(?:[\xe0-\xef]|[\xf0-\xf4].).).)(?:(?:' . TLN_REGEX_ALTS_NFC_NOES_MAYBES_REORDERS . ')++|\z)/' );
 }
+
+// (Possibly) unstable code point(s) (or end of string) proceeded by a stable code point (or start of string). See http://unicode.org/reports/tr15/#Stable_Code_Points
+define( 'TLN_REGEX_NFC_SUBNORMALIZE', '/(?:\A|[\x00-\x7f]|(?:[\xc2-\xdf]|(?:[\xe0-\xef]|[\xf0-\xf4].).).)(?:(?:' . TLN_REGEX_ALTS_NFC_NOES_MAYBES_REORDERS . ')++|\z)/' );
 // gitlost end
-if ( ! class_exists( 'TLN_Normalizer' ) ) : class TLN_Normalizer // Allow file to be included more than once (for testing) // gitlost
+class TLN_Normalizer // gitlost
 {
     const NONE = 1;
     const FORM_D = 2;
@@ -202,7 +202,7 @@ if ( ! class_exists( 'TLN_Normalizer' ) ) : class TLN_Normalizer // Allow file t
         $lastUcls = isset($combClass[$lastUchr]) ? 256 : 0;
 
         while ($i < $len) {
-			// gitlost Don't bother treating ASCII specially. Note this is subnormalize() biased change.
+			// gitlost Don't bother treating ASCII specially. Note this is a subnormalize() biased change.
 
             $ulen = $ulenMask[$s[$i] & "\xF0"];
             $uchr = substr($s, $i, $ulen);
@@ -459,4 +459,4 @@ if ( ! class_exists( 'TLN_Normalizer' ) ) : class TLN_Normalizer // Allow file t
         return false;
 		gitlost */
     }
-} endif; // gitlost
+}
