@@ -1576,6 +1576,7 @@ class TLNormalizer {
 				$time_loop += -microtime( true );
 				$num_results = count( $results );
 				$total_results += $num_results;
+				tln_debug_log( "num_gets=$num_gets, num_results=$num_results, total_result=$total_results" );
 
 				// Check whether each row and its meta data needs normalizing.
 				foreach ( $results as $obj ) {
@@ -1587,6 +1588,7 @@ class TLNormalizer {
 							break;
 						}
 					}
+					tln_debug_log( "obj->id={$obj->id}, have_field=$have_field, empty( obj->meta_values )=", empty( $obj->meta_values ) );
 
 					// Meta data retrieved as group concatenated fields.
 					if ( ! $have_field && ! empty( $obj->meta_values )
