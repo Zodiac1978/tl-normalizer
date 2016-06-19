@@ -60,7 +60,8 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 		list( self::$true, self::$false ) = defined( 'HHVM_VERSION' ) ? array( 1, 0 ) : array( true, false );
 
 		global $argv;
-		self::$doing_coverage = ! empty( preg_grep( '/--coverage/', $argv ) );
+		$grep = preg_grep( '/--coverage/', $argv );
+		self::$doing_coverage = ! empty( $grep );
 	}
 
 	static function wpTearDownAfterClass() {
