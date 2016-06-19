@@ -507,8 +507,9 @@ class Tests_TLN_DB_Check extends WP_UnitTestCase {
 
 		$post1 = $this->factory->post->create_and_get( array( 'post_title' => 'post1-title', 'post_type' => 'post' ) );
 
-		$meta_value1_1 = 'meta_value1_1'. str_repeat( 'a', self::$is_php_5_2 ? 256 : 4096 )  . $decomposed_str1;
-		$meta_value1_2 = $decomposed_str1 . 'meta_value1_2' . $decomposed_str1 . str_repeat( 'a', self::$is_php_5_2 ? 256 : 4096 ) . 'b';
+		$repeat = self::$is_php_5_2 ? 2048 : 4096;
+		$meta_value1_1 = 'meta_value1_1'. str_repeat( 'a', $repeat )  . $decomposed_str1;
+		$meta_value1_2 = $decomposed_str1 . 'meta_value1_2' . $decomposed_str1 . str_repeat( 'a', $repeat ) . 'b';
 
 		// add_post_meta() expects slashed data.
 		$meta1_1_id = add_post_meta( $post1->ID, 'meta_key1', wp_slash( $meta_value1_1 ) );
@@ -519,8 +520,10 @@ class Tests_TLN_DB_Check extends WP_UnitTestCase {
 
 		$_REQUEST = array();
 
+		tln_debug_log( "1. before check_items, strlen( meta_value1_1 )=", strlen( $meta_value1_1 ), ", strlen( meta_value1_2 )=", strlen( $meta_value1_2 ) );
 		$admin_notices = array();
 		$ret = $tlnormalizer->db_check_items( $admin_notices );
+		tln_debug_log( "2. after check_items" );
 
 		$this->assertTrue( is_array( $ret['items'] ) );
 		$this->assertSame( 1, count( $admin_notices ) );
