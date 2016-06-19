@@ -17,7 +17,7 @@ class Tests_TLN_DB_Check extends WP_UnitTestCase {
 		self::$normalizer_state = array( $tlnormalizer->dont_js, $tlnormalizer->dont_filter, $tlnormalizer->no_normalizer );
 		$tlnormalizer->dont_js = false;
 		$tlnormalizer->dont_filter = true;
-		$tlnormalizer->no_normalizer = true;
+		$tlnormalizer->no_normalizer = false;
 
 		global $wp_version;
 		self::$is_less_than_wp_4_3 = version_compare( $wp_version, '4.3', '<' );
