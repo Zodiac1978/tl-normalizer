@@ -10,6 +10,7 @@ class Tests_TLN_DB_Check extends WP_UnitTestCase {
 	static $normalizer_state = array();
 	static $is_less_than_wp_4_2 = false;
 	static $is_less_than_wp_4_3 = false;
+	static $is_php_5_2 = false;
 
 	public static function wpSetUpBeforeClass() {
 		global $tlnormalizer;
@@ -24,6 +25,7 @@ class Tests_TLN_DB_Check extends WP_UnitTestCase {
 		if ( version_compare( PHP_VERSION, '7', '>=' ) && self::$is_less_than_wp_4_3 ) {
 			error_reporting( error_reporting() ^ 8192 /*E_DEPRECATED*/ );
 		}
+		self::$is_php_5_2 = version_compare( PHP_VERSION, '5.3', '<' );
 
 		global $pagenow;
 		$pagenow = 'tools.php';
@@ -505,8 +507,8 @@ class Tests_TLN_DB_Check extends WP_UnitTestCase {
 
 		$post1 = $this->factory->post->create_and_get( array( 'post_title' => 'post1-title', 'post_type' => 'post' ) );
 
-		$meta_value1_1 = 'meta_value1_1'. str_repeat( 'a', 4096 )  . $decomposed_str1;
-		$meta_value1_2 = $decomposed_str1 . 'meta_value1_2' . $decomposed_str1 . str_repeat( 'a', 4096 ) . 'b';
+		$meta_value1_1 = 'meta_value1_1'. str_repeat( 'a', self::$is_php_5_2 ? 256 : 4096 )  . $decomposed_str1;
+		$meta_value1_2 = $decomposed_str1 . 'meta_value1_2' . $decomposed_str1 . str_repeat( 'a', self::$is_php_5_2 ? 256 : 4096 ) . 'b';
 
 		// add_post_meta() expects slashed data.
 		$meta1_1_id = add_post_meta( $post1->ID, 'meta_key1', wp_slash( $meta_value1_1 ) );
