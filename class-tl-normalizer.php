@@ -1567,7 +1567,6 @@ class TLNormalizer {
 		foreach ( $types as $type ) {
 			$sql = $this->db_check_sql( false /*normalize*/, $type, $subtype );
 
-			tln_debug_log( "1. before first get_results" );
 			$time_query += -microtime( true );
 			$results = $wpdb->get_results( $sql . ' LIMIT 0, ' . $batch_limit );
 			$time_query += +microtime( true );
@@ -1588,7 +1587,6 @@ class TLNormalizer {
 							break;
 						}
 					}
-					tln_debug_log( "1. obj->id={$obj->id}, have_field=$have_field, strlen( obj->meta_values )=", empty( $obj->meta_values ) ? '(empty)' : strlen( $obj->meta_values ) );
 
 					// Meta data retrieved as group concatenated fields.
 					if ( ! $have_field && ! empty( $obj->meta_values )
@@ -1596,7 +1594,6 @@ class TLNormalizer {
 						$have_field = 'meta';
 					}
 
-					tln_debug_log( "2. obj->id={$obj->id}, have_field=$have_field" );
 					if ( $have_field ) {
 						if ( $ret['num_items'] < $list_limit ) {
 							$title = $obj->{$this->db_title_cols[ $type ]};
