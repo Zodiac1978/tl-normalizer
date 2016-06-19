@@ -1589,7 +1589,7 @@ class TLNormalizer {
 							break;
 						}
 					}
-					tln_debug_log( "2. obj->id={$obj->id}, have_field=$have_field, empty( obj->meta_values )=", empty( $obj->meta_values ) );
+					tln_debug_log( "2. obj->id={$obj->id}, have_field=$have_field, strlen( obj->meta_values )=", empty( $obj->meta_values ) ? '(empty)' : strlen( $obj->meta_values ) );
 
 					// Meta data retrieved as group concatenated fields.
 					if ( ! $have_field && ! empty( $obj->meta_values )
@@ -1597,12 +1597,17 @@ class TLNormalizer {
 						$have_field = 'meta';
 					}
 
+					tln_debug_log( "3. obj->id={$obj->id}, have_field=$have_field" );
 					if ( $have_field ) {
 						if ( $ret['num_items'] < $list_limit ) {
+							tln_debug_log( "4. obj->id={$obj->id}, title_field={$this->db_title_cols[ $type ]}" );
 							$title = $obj->{$this->db_title_cols[ $type ]};
+							tln_debug_log( "5. obj->id={$obj->id}, title=$title" );
 							if ( mb_strlen( $title ) > TLN_DB_CHECK_TITLE_MAX_LEN ) {
 								$title = mb_substr( $title, 0, TLN_DB_CHECK_TITLE_MAX_LEN, 'UTF-8' ) . __( '...', 'normalizer' );
+								tln_debug_log( "6. obj->id={$obj->id}, title=$title" );
 							}
+							tln_debug_log( "7. obj->id={$obj->id}, title=$title" );
 							$ret['items'][] = array(
 								'id' => (int) $obj->id, 'type' => $type, 'idx' => $ret['num_items'],
 								'title' => $title, 'subtype' => isset( $obj->subtype ) ? $obj->subtype : $type, 'field' => $have_field,
@@ -1617,7 +1622,7 @@ class TLNormalizer {
 					break;
 				}
 				unset( $results );
-				tln_debug_log( "3. before inner get_results" );
+				tln_debug_log( "8. before inner get_results" );
 				$time_query += -microtime( true );
 				$results = $wpdb->get_results( $sql . ' LIMIT ' . ( $num_gets * $batch_limit ) . ', ' . $batch_limit );
 				$time_query += +microtime( true );

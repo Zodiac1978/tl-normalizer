@@ -523,7 +523,7 @@ class Tests_TLN_DB_Check extends WP_UnitTestCase {
 
 		$_REQUEST = array();
 
-		tln_debug_log( "1. before check_items, total_len=$total_len" );
+		tln_debug_log( "1. before check_items, total_len=$total_len, post1->ID={$post1->ID}" );
 		$admin_notices = array();
 		$ret = $tlnormalizer->db_check_items( $admin_notices );
 		tln_debug_log( "2. after check_items" );
