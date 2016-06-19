@@ -507,7 +507,7 @@ class Tests_TLN_DB_Check extends WP_UnitTestCase {
 
 		$post1 = $this->factory->post->create_and_get( array( 'post_title' => 'post1-title', 'post_type' => 'post' ) );
 
-		$repeat = self::$is_php_5_2 ? 3328 : 4096;
+		$repeat = self::$is_php_5_2 ? 3600 : 8192;
 		$total_len = 0;
 		$meta_value1_1 = 'meta_value1_1'. str_repeat( 'a', $repeat )  . $decomposed_str1;
 		$total_len += strlen( $meta_value1_1 );
