@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Normalizer 2.0.7\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/tl-normalize\n"
-"POT-Creation-Date: 2016-06-19 20:04+0100\n"
-"PO-Revision-Date: 2016-06-19 20:05+0100\n"
+"POT-Creation-Date: 2016-06-22 02:34+0100\n"
+"PO-Revision-Date: 2016-06-22 02:34+0100\n"
 "Last-Translator: MB <mb@mb.ie>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -61,7 +61,7 @@ msgstr ""
 msgid "Please wait..."
 msgstr "S&rsquo;il vous plaît attendre..."
 
-#: class-tl-normalizer.php:947 class-tl-normalizer.php:1170
+#: class-tl-normalizer.php:947 class-tl-normalizer.php:1171
 msgid "Nörmalizer Database Check"
 msgstr "Nörmalizer vérifier la base de données"
 
@@ -69,22 +69,22 @@ msgstr "Nörmalizer vérifier la base de données"
 msgid "Nörmalizer Db Check"
 msgstr "Nörmalizer vérifier"
 
-#: class-tl-normalizer.php:1229
+#: class-tl-normalizer.php:1230
 msgid "Rescan the Database"
 msgstr "Parcourir à nouveau la base de données"
 
-#: class-tl-normalizer.php:1231
+#: class-tl-normalizer.php:1232
 msgid "Scan the Database"
 msgstr "Parcourir la base de données"
 
-#: class-tl-normalizer.php:1239
+#: class-tl-normalizer.php:1240
 msgid ""
 "You can scan the database for non-normalized data (nothing will be updated):"
 msgstr ""
 "Vous pouvez parcourir la base de données pour les données non-normalisées "
 "(rien ne sera mis à jour)&nbsp;:"
 
-#: class-tl-normalizer.php:1244
+#: class-tl-normalizer.php:1245
 msgid ""
 "Scanning the database can take a long time depending on the amount and type "
 "of data you have."
@@ -92,7 +92,7 @@ msgstr ""
 "Parcourir la base de données peut prendre un certain temps en fonction de la "
 "quantité et le type des données que vous avez."
 
-#: class-tl-normalizer.php:1261
+#: class-tl-normalizer.php:1262
 msgid ""
 "You can normalize the non-normalized data found in the database. The "
 "database <strong>will be updated</strong>."
@@ -100,7 +100,7 @@ msgstr ""
 "Vous pouvez normaliser les données non-normalisées trouvées dans la base de "
 "données. La base de données <strong>sera mise à jour</strong>."
 
-#: class-tl-normalizer.php:1264
+#: class-tl-normalizer.php:1265
 msgid ""
 "<strong>Important:</strong> before updating, please <a href=\"https://codex."
 "wordpress.org/WordPress_Backups\">back up your database</a>."
@@ -109,11 +109,11 @@ msgstr ""
 "<a href=\\\"https://codex.wordpress.org/fr:WordPress_Backups\\\">faire une "
 "sauvegarde de votre base de données </a>."
 
-#: class-tl-normalizer.php:1266
+#: class-tl-normalizer.php:1267
 msgid "Normalize All"
 msgstr "Normaliser tous"
 
-#: class-tl-normalizer.php:1268
+#: class-tl-normalizer.php:1269
 msgid ""
 "Normalizing can take a long time depending on the amount and type of data "
 "you have."
@@ -123,23 +123,23 @@ msgstr ""
 
 #. translators: %1$s: formatted maximum number of non-normalized items listed;
 #. %2$s: formatted total number of non-normalized items found.
-#: class-tl-normalizer.php:1284
+#: class-tl-normalizer.php:1285
 msgid "First %1$s Non-Normalized Items of %2$s Found"
 msgstr "%1$s premiers identifiants non-normalisés de %2$s trouvés"
 
-#: class-tl-normalizer.php:1288
+#: class-tl-normalizer.php:1289
 msgid "Non-Normalized Items"
 msgstr "Éléments non-normalisés"
 
-#: class-tl-normalizer.php:1314
+#: class-tl-normalizer.php:1315
 msgid "Rescan Slugs"
 msgstr "Parcourir à nouveau les identifiants"
 
-#: class-tl-normalizer.php:1316
+#: class-tl-normalizer.php:1317
 msgid "Scan Slugs"
 msgstr "Parcourir les identifiants"
 
-#: class-tl-normalizer.php:1324
+#: class-tl-normalizer.php:1325
 msgid ""
 "You can scan the database for slugs that could be percent-encoded from non-"
 "normalized data (nothing will be updated):"
@@ -148,13 +148,13 @@ msgstr ""
 "pourraient être pour-cent encodé à partir des données non-normalisées (rien "
 "ne sera mis à jour)&nbsp;:"
 
-#: class-tl-normalizer.php:1327
+#: class-tl-normalizer.php:1328
 msgid "A list of posts and/or terms with suspect slugs will be displayed."
 msgstr ""
 "Une liste des articles et&nbsp;/&nbsp;ou des termes avec les identifiants "
 "suspects sera affichée."
 
-#: class-tl-normalizer.php:1332
+#: class-tl-normalizer.php:1333
 msgid ""
 "Scanning the slugs can take a long time depending on the amount and type of "
 "data you have."
@@ -164,66 +164,66 @@ msgstr ""
 
 #. translators: %1$s: formatted maximum number of non-normalized slugs listed;
 #. %2$s: formatted total number of non-normalized slugs found.
-#: class-tl-normalizer.php:1348
+#: class-tl-normalizer.php:1349
 msgid "First %1$s Non-Normalized Slugs of %2$s Found"
 msgstr "%1$s premiers identifiants non-normalisés de %2$s trouvés"
 
-#: class-tl-normalizer.php:1352
+#: class-tl-normalizer.php:1353
 msgid "Non-Normalized Slugs"
 msgstr "Identifiants non-normalisés"
 
-#: class-tl-normalizer.php:1523
+#: class-tl-normalizer.php:1524
 msgid "Database error."
 msgstr "Erreur de base de données."
 
-#: class-tl-normalizer.php:1524
+#: class-tl-normalizer.php:1525
 msgid "Meta data error."
 msgstr "Erreur de métadonnées."
 
-#: class-tl-normalizer.php:1525
+#: class-tl-normalizer.php:1526
 msgid "Parameters error."
 msgstr "Erreur de paramètres."
 
-#: class-tl-normalizer.php:1526
+#: class-tl-normalizer.php:1527
 msgid "Transient has expired. Please re-scan."
 msgstr "Le transitoire a expiré. Veuillez parcourir à nouveau."
 
-#: class-tl-normalizer.php:1527
+#: class-tl-normalizer.php:1528
 msgid "Data out of sync!"
 msgstr "Les données se sont désynchronisées&nbsp;!"
 
-#: class-tl-normalizer.php:1528
+#: class-tl-normalizer.php:1529
 msgid "No items selected!"
 msgstr "Aucun élément sélectionné&nbsp;!"
 
-#: class-tl-normalizer.php:1600 class-tl-normalizer.php:2030
+#: class-tl-normalizer.php:1601 class-tl-normalizer.php:2031
 msgid "..."
 msgstr "..."
 
 #. translators: %s: formatted number of items detected.
-#: class-tl-normalizer.php:1637
+#: class-tl-normalizer.php:1638
 msgid "%s non-normalized item detected."
 msgid_plural "%s non-normalized items detected."
 msgstr[0] "%s élement non-normalisé a détecté."
 msgstr[1] "%s élements non-normalisées ont détecté."
 
-#: class-tl-normalizer.php:1640
+#: class-tl-normalizer.php:1641
 msgid "<strong>No</strong> non-normalized data detected!"
 msgstr "<strong>Aucune</strong> donnée non-normalisée a détecté&nbsp;!"
 
 #. translators: %s: formatted number of items normalized.
-#: class-tl-normalizer.php:1815
+#: class-tl-normalizer.php:1816
 msgid "%s item normalized."
 msgid_plural "%s items normalized."
 msgstr[0] "%s élément a normalisé."
 msgstr[1] "%s éléments ont normalisé."
 
-#: class-tl-normalizer.php:1817 class-tl-normalizer.php:2246
+#: class-tl-normalizer.php:1818 class-tl-normalizer.php:2245
 msgid "Nothing updated!"
 msgstr "Rien mis à jour&nbsp;!"
 
 #. translators: %s: formatted number of items locked.
-#: class-tl-normalizer.php:1822
+#: class-tl-normalizer.php:1823
 msgid "%s item not normalized, somebody is editing it."
 msgid_plural "%s items not normalized, somebody is editing them."
 msgstr[0] ""
@@ -234,34 +234,34 @@ msgstr[1] ""
 "les modifier."
 
 #. translators: %s: formatted number of items that failed to normalize.
-#: class-tl-normalizer.php:1828
+#: class-tl-normalizer.php:1829
 msgid "%s item not normalized, failed to normalize."
 msgid_plural "%s items not normalized, failed to normalize."
 msgstr[0] "%s élément n&rsquo;a pas normalisé, échoué à normaliser."
 msgstr[1] "%s éléments n&rsquo;ont pas normalisé, échoué à normaliser."
 
 #. translators: %s: formatted number of percent-encoded items detected.
-#: class-tl-normalizer.php:2064
+#: class-tl-normalizer.php:2065
 msgid "%s non-normalized percent-encoded slug detected."
 msgid_plural "%s non-normalized percent-encoded slugs detected."
 msgstr[0] "%s identifiant pour-cent encodé non-normalisé a détecté."
 msgstr[1] "%s identifiants pour-cent encodés non-normalisés ont détecté."
 
-#: class-tl-normalizer.php:2068
+#: class-tl-normalizer.php:2069
 msgid "<strong>No</strong> non-normalized percent-encoded slugs detected!"
 msgstr ""
 "<strong>Aucun</strong> identifiant pour-cent encodé non-normalisé a "
 "détecté&nbsp;!"
 
 #. translators: %s: formatted number of slugs normalized.
-#: class-tl-normalizer.php:2244
+#: class-tl-normalizer.php:2243
 msgid "%s slug normalized."
 msgid_plural "%s slugs normalized."
 msgstr[0] "%s identifiant a normalisé."
 msgstr[1] "%s identifiants ont normalisé."
 
 #. translators: %s: formatted number of items locked.
-#: class-tl-normalizer.php:2251
+#: class-tl-normalizer.php:2250
 msgid "%s slug not normalized, somebody is editing it."
 msgid_plural "%s slugs not normalized, somebody is editing them."
 msgstr[0] ""
@@ -272,21 +272,21 @@ msgstr[1] ""
 "de les modifier."
 
 #. translators: %s: formatted number of slugs not found.
-#: class-tl-normalizer.php:2257
+#: class-tl-normalizer.php:2256
 msgid "%s slug not normalized, no longer exists."
 msgid_plural "%s slugs not normalized, no longer exist."
 msgstr[0] "%s identifiant n&rsquo;a pas normalisé, n&rsquo;existe plus."
 msgstr[1] "%s identifiants n&rsquo;ont pas normalisé, n&rsquo;existent plus."
 
 #. translators: %s: formatted number of slugs not non-normalized.
-#: class-tl-normalizer.php:2263
+#: class-tl-normalizer.php:2262
 msgid "%s slug not normalized, no longer non-normalized."
 msgid_plural "%s slugs not normalized, no longer non-normalized."
 msgstr[0] "%s identifiant n&rsquo;a pas normalisé, plus non-normalisé."
 msgstr[1] "%s identifiants n&rsquo;ont pas normalisé, plus non-normalisé."
 
 #. translators: %s: formatted number of slugs that failed to normalize.
-#: class-tl-normalizer.php:2269
+#: class-tl-normalizer.php:2268
 msgid "%s slug not normalized, failed to normalize."
 msgid_plural "%s slugs not normalized, failed to normalize."
 msgstr[0] "%s identifiant n&rsquo;a pas normalisé, échoué à normaliser."

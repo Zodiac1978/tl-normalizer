@@ -39,12 +39,34 @@ define( 'TLN_REGEX_IS_VALID_UTF8',
 			| \xf4[\x80-\x8f][\x80-\xbf][\x80-\xbf]           # plane 16
 			)*+\z/x'
 );
-
+// Unfortunately the above seg faults for older versions of PCRE. 8.31 (06-Jul-2012, bundled with PHP 5.3.19) is lowest known working version, might work for lower.
+// Definitely doesn't work for 8.12 (15-Jan-2011, bundled with PHP 5.3.18). So use a negative formulation for these (over 300% slower for < 1% invalid).
+define( 'TLN_REGEX_IS_INVALID_UTF8',
+			'/
+			  [\xc0\xc1\xf5-\xff]
+			| [\xc2-\xf4][^\x80-\xbf]
+			| [\xe0-\xf4][\x80-\xbf][^\x80-\xbf]
+			| [\xf0-\xf4][\x80-\xbf][\x80-\xbf][^\x80-\xbf]
+			| [\xed\xf4][\xa0-\xbf]
+			| [\xe0\xf0][\x80-\x8f]
+			| [\xe0\xf4][\x90-\x9f]
+			| (?<= \A | [\x00-\x7f] | [\xc2-\xdf][\x80-\xbf] | [\xe0-\xef][\x80-\xbf][\x80-\xbf] | [\xf0-\xf4][\x80-\xbf][\x80-\xbf][\x80-\xbf] )[\x80-\xbf]
+			| [\xc2-\xf4]\z
+			/sx'
+);
+if ( version_compare( PCRE_VERSION, '8.31', '<' ) ) {
+	function tln_is_valid_utf8( $str ) {
+		return 1 !== preg_match( TLN_REGEX_IS_INVALID_UTF8, $str );
+	}
+} else {
+	function tln_is_valid_utf8( $str ) {
+		return 1 === preg_match( TLN_REGEX_IS_VALID_UTF8, $str );
+	}
+}
 if ( ! defined( 'TLN_REGEX_ALTS_NFC_NOES' ) ) {
 	require dirname( __FILE__ ) . '/tln_regex_alts.php';
 }
-
-// (Possibly) unstable code point(s) (or end of string) proceeded by a stable code point (or start of string). See http://unicode.org/reports/tr15/#Stable_Code_Points
+// (Possibly) unstable code point(s) (or end of string) preceded by a stable code point (or start of string). See http://unicode.org/reports/tr15/#Stable_Code_Points
 define( 'TLN_REGEX_NFC_SUBNORMALIZE', '/(?:\A|[\x00-\x7f]|(?:[\xc2-\xdf]|(?:[\xe0-\xef]|[\xf0-\xf4].).).)(?:(?:' . TLN_REGEX_ALTS_NFC_NOES_MAYBES_REORDERS . ')++|\z)/' );
 // gitlost end
 class TLN_Normalizer // gitlost
@@ -78,7 +100,7 @@ class TLN_Normalizer // gitlost
         }
 		// gitlost begin
         if (self::NFC === $form) {
-			if (1 !== preg_match(TLN_REGEX_IS_VALID_UTF8, $s)) {
+			if (!tln_is_valid_utf8($s)) {
 				return false;
 			}
 			if (1 !== preg_match(TLN_REGEX_NFC_NOES_MAYBES_REORDERS, $s)) { // If contains no characters that could possibly need normalizing...
@@ -137,7 +159,7 @@ class TLN_Normalizer // gitlost
 		}
 
         switch ($form) {
-            case self::NONE: return 1 === preg_match(TLN_REGEX_IS_VALID_UTF8, $s .= '') ? $s : false; // Note must still check validity.
+            case self::NONE: return tln_is_valid_utf8($s .= '') ? $s : false; // Note must still check validity.
             case self::NFC: $C = true; $K = false; break;
             case self::NFD: $C = false; $K = false; break;
             case self::NFKC: $C = true; $K = true; break;
@@ -145,7 +167,7 @@ class TLN_Normalizer // gitlost
             default: return false;
         }
 
-		if (1 !== preg_match(TLN_REGEX_IS_VALID_UTF8, $s .= '')) {
+		if (!tln_is_valid_utf8($s .= '')) {
             return false;
         }
 		// gitlost end

@@ -10,7 +10,6 @@ class Tests_TLN_DB_Check extends WP_UnitTestCase {
 	static $normalizer_state = array();
 	static $is_less_than_wp_4_2 = false;
 	static $is_less_than_wp_4_3 = false;
-	static $is_php_5_2 = false;
 
 	public static function wpSetUpBeforeClass() {
 		global $tlnormalizer;
@@ -25,7 +24,6 @@ class Tests_TLN_DB_Check extends WP_UnitTestCase {
 		if ( version_compare( PHP_VERSION, '7', '>=' ) && self::$is_less_than_wp_4_3 ) {
 			error_reporting( error_reporting() ^ 8192 /*E_DEPRECATED*/ );
 		}
-		self::$is_php_5_2 = version_compare( PHP_VERSION, '5.3', '<' );
 
 		global $pagenow;
 		$pagenow = 'tools.php';
@@ -507,7 +505,7 @@ class Tests_TLN_DB_Check extends WP_UnitTestCase {
 
 		$post1 = $this->factory->post->create_and_get( array( 'post_title' => 'post1-title', 'post_type' => 'post' ) );
 
-		$repeat = self::$is_php_5_2 ? 3530 : 8192; // TODO: not good.
+		$repeat = 8192;
 		$meta_value1_1 = 'meta_value1_1'. str_repeat( 'a', $repeat )  . $decomposed_str1;
 		$meta_value1_2 = $decomposed_str1 . 'meta_value1_2' . $decomposed_str1 . str_repeat( 'a', $repeat ) . 'b';
 

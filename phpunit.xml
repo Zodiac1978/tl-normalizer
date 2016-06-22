@@ -17,6 +17,7 @@
 			<directory suffix=".php">./</directory>
 			<exclude>
 				<directory>Symfony/Resources</directory>
+				<directory>node_modules</directory>
 				<directory>perf</directory>
 				<directory>php-utf8</directory>
 				<directory>tests</directory>

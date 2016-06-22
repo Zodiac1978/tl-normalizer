@@ -10,5 +10,11 @@ function _manually_load_plugin() {
 }
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
+define( 'SUBDOMAIN_INSTALL', true );
+define( 'TLN_TESTING', true );
 require $_tests_dir . '/includes/bootstrap.php';
 
+global $wp_version;
+if ( version_compare( $wp_version, '4.1', '<' ) ) {
+	remove_action('init', 'wp_widgets_init', 1);
+}

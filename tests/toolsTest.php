@@ -112,11 +112,11 @@ class Tests_TLN_Tools extends WP_UnitTestCase {
 		$tlnormalizer->load_tln_normalizer_class();
 
 		$out = tln_utf8_rand_ratio_str( 100, 1 );
-		$this->assertFalse( 1 === preg_match( TLN_REGEX_IS_VALID_UTF8, $out ) );
+		$this->assertFalse( tln_is_valid_utf8( $out ) );
 
 		global $tln_nfc_noes_maybes_reorders;
 		$out = tln_utf8_rand_ratio_str( 100, 1, $tln_nfc_noes_maybes_reorders );
-		$this->assertTrue( 1 === preg_match( TLN_REGEX_IS_VALID_UTF8, $out ) );
+		$this->assertTrue( tln_is_valid_utf8( $out ) );
 	}
 
 	/**
