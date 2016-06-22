@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-// gitlost removed namespace stuff, renamed to TLN_Normalizer to avoid conflicts, allowed to be included more than once.
+// gitlost removed namespace stuff, renamed to TLN_Normalizer to avoid conflicts.
 // gitlost use single-byte preg_XXX()'s, and generated regex alternatives and preg_match_all(), added full isNormalized() check for NFC with fall back to normalize().
 // https://github.com/symfony/polyfill/tree/master/src/Intl/Normalizer
 
@@ -40,7 +40,7 @@ define( 'TLN_REGEX_IS_VALID_UTF8',
 			)*+\z/x'
 );
 // Unfortunately the above seg faults for older versions of PCRE. 8.31 (06-Jul-2012, bundled with PHP 5.3.19) is lowest known working version, might work for lower.
-// Definitely doesn't work for 8.12 (15-Jan-2011, bundled with PHP 5.3.18). So use a negative formulation for these (over 300% slower for < 1% invalid).
+// Definitely doesn't work for 8.12 (15-Jan-2011, bundled with PHP 5.3.18). So use a negative formulation for these (over 300% slower for < 1% invalid), or UTF-8 mode if available.
 define( 'TLN_REGEX_IS_INVALID_UTF8',
 			'/
 			  [\xc0\xc1\xf5-\xff]
@@ -55,8 +55,15 @@ define( 'TLN_REGEX_IS_INVALID_UTF8',
 			/sx'
 );
 if ( version_compare( PCRE_VERSION, '8.31', '<' ) ) {
-	function tln_is_valid_utf8( $str ) {
-		return 1 !== preg_match( TLN_REGEX_IS_INVALID_UTF8, $str );
+	// If before RFC 3629 compliance or if UTF-8 mode not available.
+	if ( version_compare( PCRE_VERSION, '7.3', '<' ) || false === preg_match( '//u', '' ) ) {
+		function tln_is_valid_utf8( $str ) {
+			return 1 !== preg_match( TLN_REGEX_IS_INVALID_UTF8, $str );
+		}
+	} else {
+		function tln_is_valid_utf8( $str ) {
+			return 1 === preg_match( '//u', $str ); // Original Normalizer validity check.
+		}
 	}
 } else {
 	function tln_is_valid_utf8( $str ) {

@@ -105,10 +105,13 @@ class Tests_TLN_DB_Check extends WP_UnitTestCase {
 
 		$title3 = 'post3-title' . str_repeat( "\xc2\x80", TLN_DB_CHECK_TITLE_MAX_LEN );
 		$content3 = 'post3-content';
-		$excerpt3 = 'post3-excerpt' . ( self::$is_less_than_wp_4_2 ? $decomposed_str1 : $decomposed_str3 ); // Pre-WP 4.2 can't handle 4-byte UTF-8 (MySQL).
+		// Pre-WP 4.2 can't handle 4-byte UTF-8 (MySQL). Also neither can database used in travis for PHP 5.3.
+		$dont_use_4byte = self::$is_less_than_wp_4_2 || version_compare( PHP_VERSION, '5.3', '=' );
+		$excerpt3 = 'post3-excerpt' . ( $dont_use_4byte ? $decomposed_str1 : $decomposed_str3 );
 
 		$post3 = $this->factory->post->create_and_get( array( 'post_title' => $title3, 'post_content' => $content3, 'post_excerpt' => $excerpt3, 'post_type' => 'post' ) );
 		$this->assertTrue( is_object( $post3 ) );
+		$this->assertTrue( $post3->post_excerpt === $excerpt3 );
 
 		$title4 = 'post4-title';
 		$content4 = 'post4-content';
@@ -505,7 +508,7 @@ class Tests_TLN_DB_Check extends WP_UnitTestCase {
 
 		$post1 = $this->factory->post->create_and_get( array( 'post_title' => 'post1-title', 'post_type' => 'post' ) );
 
-		$repeat = 8192;
+		$repeat = 16384;
 		$meta_value1_1 = 'meta_value1_1'. str_repeat( 'a', $repeat )  . $decomposed_str1;
 		$meta_value1_2 = $decomposed_str1 . 'meta_value1_2' . $decomposed_str1 . str_repeat( 'a', $repeat ) . 'b';
 
