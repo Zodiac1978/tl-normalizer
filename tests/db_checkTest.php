@@ -10,6 +10,7 @@ class Tests_TLN_DB_Check extends WP_UnitTestCase {
 	static $normalizer_state = array();
 	static $is_less_than_wp_4_2 = false;
 	static $is_less_than_wp_4_3 = false;
+	static $is_less_than_wp_4 = false;
 
 	public static function wpSetUpBeforeClass() {
 		global $tlnormalizer;
@@ -21,6 +22,7 @@ class Tests_TLN_DB_Check extends WP_UnitTestCase {
 		global $wp_version;
 		self::$is_less_than_wp_4_3 = version_compare( $wp_version, '4.3', '<' );
 		self::$is_less_than_wp_4_2 = version_compare( $wp_version, '4.2', '<' );
+		self::$is_less_than_wp_4 = version_compare( $wp_version, '4', '<' );
 		if ( version_compare( PHP_VERSION, '7', '>=' ) && self::$is_less_than_wp_4_3 ) {
 			error_reporting( error_reporting() ^ 8192 /*E_DEPRECATED*/ );
 		}
@@ -46,6 +48,9 @@ class Tests_TLN_DB_Check extends WP_UnitTestCase {
 		if ( ! method_exists( 'WP_UnitTestCase', 'wpSetUpBeforeClass' ) ) { // Hack for WP testcase.php versions prior to 4.4
 			self::wpSetUpBeforeClass();
 		}
+		if ( self::$is_less_than_wp_4 ) {
+			mbstring_binary_safe_encoding(); // For <= WP 3.9.12 compatibility - remove_accents() uses naked strlen().
+		}
 	}
 
 	function tearDown() {
@@ -53,6 +58,9 @@ class Tests_TLN_DB_Check extends WP_UnitTestCase {
 		remove_filter( 'wp_redirect', array( __CLASS__, 'wp_redirect' ), 10, 2 );
 		if ( ! method_exists( 'WP_UnitTestCase', 'wpSetUpBeforeClass' ) ) { // Hack for WP testcase.php versions prior to 4.4
 			self::wpTearDownAfterClass();
+		}
+		if ( self::$is_less_than_wp_4 ) {
+			reset_mbstring_encoding(); // For <= WP 3.9.12 compatibility - remove_accents() uses naked strlen().
 		}
 	}
 
@@ -83,6 +91,14 @@ class Tests_TLN_DB_Check extends WP_UnitTestCase {
      */
 	function test_db_check_post() {
 		$this->assertTrue( is_admin() );
+
+		global $tlnormalizer;
+		if ( self::$is_less_than_wp_4 ) {
+			// For <= WP 3.9.12 compatibility - filters seem to get left hanging around.
+			foreach( $tlnormalizer->post_filters as $filter ) {
+				remove_filter( $filter, array( $tlnormalizer, 'tl_normalizer' ), $tlnormalizer->priority );
+			}
+		}
 
 		$decomposed_str1 = "o\xcc\x88"; // o umlaut.
 
@@ -127,7 +143,6 @@ class Tests_TLN_DB_Check extends WP_UnitTestCase {
 
 		$post5 = $this->factory->post->create_and_get( array( 'post_title' => $title5, 'post_content' => $content5, 'post_excerpt' => $excerpt5, 'post_type' => 'post' ) );
 
-		global $tlnormalizer;
 		$admin_notices = array();
 		$ret = $tlnormalizer->db_check_items( $admin_notices );
 
@@ -234,6 +249,14 @@ class Tests_TLN_DB_Check extends WP_UnitTestCase {
 	function test_db_check_term() {
 		$this->assertTrue( is_admin() );
 
+		global $tlnormalizer;
+		if ( self::$is_less_than_wp_4 ) {
+			// For <= WP 3.9.12 compatibility - filters seem to get left hanging around.
+			foreach( $tlnormalizer->term_filters as $filter ) {
+				remove_filter( $filter, array( $tlnormalizer, 'tl_normalizer' ), $tlnormalizer->priority );
+			}
+		}
+
 		$decomposed_str1 = "o\xcc\x88"; // o umlaut.
 
 		$term1_id = $this->factory->term->create( array( 'name' => 'term1' . $decomposed_str1, 'taxonomy' => 'category', 'description' => 'desc1' ) );
@@ -243,7 +266,6 @@ class Tests_TLN_DB_Check extends WP_UnitTestCase {
 		$term5_id = $this->factory->term->create( array( 'name' => 'term5' . $decomposed_str1, 'taxonomy' => 'category', 'description' => 'desc5' . $decomposed_str1 ) );
 		$term6_id = $this->factory->term->create( array( 'name' => 'term6', 'taxonomy' => 'category', 'description' => 'desc6' ) );
 
-		global $tlnormalizer;
 		$admin_notices = array();
 		$ret = $tlnormalizer->db_check_items( $admin_notices );
 
