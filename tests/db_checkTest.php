@@ -105,8 +105,8 @@ class Tests_TLN_DB_Check extends WP_UnitTestCase {
 
 		$title3 = 'post3-title' . str_repeat( "\xc2\x80", TLN_DB_CHECK_TITLE_MAX_LEN );
 		$content3 = 'post3-content';
-		// Pre-WP 4.2 can't handle 4-byte UTF-8 (MySQL). Also neither can database used in travis for PHP 5.3.
-		$dont_use_4byte = self::$is_less_than_wp_4_2 || version_compare( PHP_VERSION, '5.3', '=' );
+		// Pre-WP 4.2 can't handle 4-byte UTF-8 (MySQL). Also neither can database used in travis for PHP 5.3.29.
+		$dont_use_4byte = self::$is_less_than_wp_4_2 || ( version_compare( PHP_VERSION, '5.3', '>=' ) && version_compare( PHP_VERSION, '5.4', '<' ) );
 		$excerpt3 = 'post3-excerpt' . ( $dont_use_4byte ? $decomposed_str1 : $decomposed_str3 );
 
 		$post3 = $this->factory->post->create_and_get( array( 'post_title' => $title3, 'post_content' => $content3, 'post_excerpt' => $excerpt3, 'post_type' => 'post' ) );
