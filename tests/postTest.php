@@ -310,26 +310,28 @@ class Tests_TLN_Post extends WP_UnitTestCase {
 			'post_mime_type' => 'audio/mpeg',
 		);
 
-		$id3_keys = wp_get_attachment_id3_keys( null, 'edit' );
-		foreach ( $id3_keys as $key => $label ) {
-			$_POST[ 'id3_' . $key ] = $label . $decomposed_str;
-		}
+		if ( function_exists( 'wp_get_attachment_id3_keys' ) ) {
+			$id3_keys = wp_get_attachment_id3_keys( null, 'edit' );
+			foreach ( $id3_keys as $key => $label ) {
+				$_POST[ 'id3_' . $key ] = $label . $decomposed_str;
+			}
 
-		do_action( 'init' );
+			do_action( 'init' );
 
-		global $tlnormalizer;
-		$this->assertArrayHasKey( 'post', $tlnormalizer->added_filters );
+			global $tlnormalizer;
+			$this->assertArrayHasKey( 'post', $tlnormalizer->added_filters );
 
-		// Update.
-		$out = edit_post();
-		$this->assertSame( $id, $out );
+			// Update.
+			$out = edit_post();
+			$this->assertSame( $id, $out );
 
-		$out = get_post_meta( $id, '_wp_attachment_metadata', true );
-		$this->assertInternalType( 'array', $out );
+			$out = get_post_meta( $id, '_wp_attachment_metadata', true );
+			$this->assertInternalType( 'array', $out );
 
-		foreach ( $id3_keys as $key => $label ) {
-			$this->assertSame( TLN_Normalizer::normalize( $_POST[ 'id3_' . $key ] ), $out[ $key ] );
-			if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $_POST[ 'id3_' . $key ] ), $out[ $key ] );
+			foreach ( $id3_keys as $key => $label ) {
+				$this->assertSame( TLN_Normalizer::normalize( $_POST[ 'id3_' . $key ] ), $out[ $key ] );
+				if ( class_exists( 'Normalizer' ) ) $this->assertSame( Normalizer::normalize( $_POST[ 'id3_' . $key ] ), $out[ $key ] );
+			}
 		}
 	}
 
