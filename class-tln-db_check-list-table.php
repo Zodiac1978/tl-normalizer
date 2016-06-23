@@ -460,7 +460,7 @@ class TLN_DB_Check_Slugs_List_Table extends TLN_DB_Check_List_Table {
 		$value = $item['id'] . ':' . $item['type'] . ':' . $item['idx'];
 		?>
 		<label class="screen-reader-text" for="cb-select-<?php echo $item['id']; ?>"><?php printf( __( 'Select %s' /*Use WP string*/ ), $item['title'] ); ?></label>
-		<input class="hide-if-no-js" id="cb-select-<?php echo $item['id']; ?>" type="checkbox" name="item[]" value="<?php echo esc_attr( $value ); ?>" />
+		<input id="cb-select-<?php echo $item['id']; ?>" type="checkbox" name="item[]" value="<?php echo esc_attr( $value ); ?>" />
 		<?php
 	}
 
