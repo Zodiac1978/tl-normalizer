@@ -8,6 +8,7 @@
 class Tests_TLN_Menus extends WP_UnitTestCase {
 
 	static $normalizer_state = array();
+	static $is_less_than_wp_4 = false;
 
 	public static function wpSetUpBeforeClass() {
 		global $tlnormalizer;
@@ -15,6 +16,9 @@ class Tests_TLN_Menus extends WP_UnitTestCase {
 		$tlnormalizer->dont_js = true;
 		$tlnormalizer->dont_filter = false;
 		$tlnormalizer->no_normalizer = true;
+
+		global $wp_version;
+		self::$is_less_than_wp_4 = version_compare( $wp_version, '4', '<' );
 
 		global $pagenow;
 		$pagenow = 'nav-menus.php';
@@ -34,6 +38,9 @@ class Tests_TLN_Menus extends WP_UnitTestCase {
 	}
 
 	function tearDown() {
+		if ( self::$is_less_than_wp_4 && $this->caught_deprecated && 'define()' === $this->caught_deprecated[0] ) {
+			array_shift( $this->caught_deprecated );
+		}
 		parent::tearDown();
 		if ( ! method_exists( 'WP_UnitTestCase', 'wpSetUpBeforeClass' ) ) { // Hack for WP testcase.php versions prior to 4.4
 			self::wpTearDownAfterClass();

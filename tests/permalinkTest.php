@@ -41,6 +41,9 @@ class Tests_TLN_Permalink extends WP_UnitTestCase {
 	}
 
 	function tearDown() {
+		if ( self::$is_less_than_wp_4 && $this->caught_deprecated && 'define()' === $this->caught_deprecated[0] ) {
+			array_shift( $this->caught_deprecated );
+		}
 		parent::tearDown();
 		if ( ! method_exists( 'WP_UnitTestCase', 'wpSetUpBeforeClass' ) ) { // Hack for WP testcase.php versions prior to 4.4
 			self::wpTearDownAfterClass();
