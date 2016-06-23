@@ -21,6 +21,7 @@ env:
 - WP_VERSION=4.1.12
 - WP_VERSION=4.0.12
 - WP_VERSION=3.9.13
+- WP_VERSION=3.8.15
 
 matrix:
   exclude:
@@ -32,6 +33,8 @@ matrix:
       env: WP_VERSION=4.0.12
     - php: 7
       env: WP_VERSION=3.9.13
+    - php: 7
+      env: WP_VERSION=3.8.15
 
 install:
 - npm install grunt-cli
