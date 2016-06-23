@@ -919,7 +919,7 @@ class TLNormalizer {
 			$base = substr( $base, 5 );
 		}
 
-		if ( 'attachment' === $base || 'media' === $base || 'meta' === $base || 'save' === $base ) {
+		if ( 'async-upload' === $base || 'attachment' === $base || 'media' === $base || 'meta' === $base || 'save' === $base ) {
 			$base = 'post';
 		}
 
@@ -1566,6 +1566,9 @@ class TLNormalizer {
 
 		foreach ( $types as $type ) {
 			$sql = $this->db_check_sql( false /*normalize*/, $type, $subtype );
+			if ( ! $sql ) {
+				continue;
+			}
 
 			$time_query += -microtime( true );
 			$results = $wpdb->get_results( $sql . ' LIMIT 0, ' . $batch_limit );
@@ -1678,6 +1681,9 @@ class TLNormalizer {
 
 		foreach ( $types as $type ) {
 			$sql = $this->db_check_sql( true /*normalize*/, $type, $subtype );
+			if ( ! $sql ) {
+				continue;
+			}
 			$per_type_updates = 0;
 
 			$time_query += -microtime( true );
@@ -2008,6 +2014,9 @@ class TLNormalizer {
 
 		foreach ( $types as $type ) {
 			$sql = $this->db_check_slug_sql( $type, $subtype );
+			if ( ! $sql ) {
+				continue;
+			}
 
 			$time_query += -microtime( true );
 			$results = $wpdb->get_results( $sql . ' LIMIT 0, ' . $batch_limit );
