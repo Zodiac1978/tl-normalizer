@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 if ( ! defined( 'TLN_VERSION' ) ) {
 	// Need to be synced with "readme.txt".
 	define( 'TLN_VERSION', '2.0.7' );
-	define( 'TLN_WP_AT_LEAST_VERSION', '4.0.11' );
+	define( 'TLN_WP_AT_LEAST_VERSION', '3.9.13' );
 	define( 'TLN_WP_UP_TO_VERSION', '4.5.3' );
 }
 
