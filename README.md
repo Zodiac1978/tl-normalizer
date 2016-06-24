@@ -5,7 +5,7 @@
 **Tags:** Unicode, Normalization, Form C, Unicode Normalization Form C, Normalize, Normalizer  
 **Requires at least:** 3.9.13  
 **Tested up to:** 4.5.3  
-**Stable tag:** 2.0.7  
+**Stable tag:** 2.0.8  
 **License:** GPLv2 or later  
 **License URI:** http://www.gnu.org/licenses/gpl-2.0.html  
 
@@ -56,6 +56,10 @@ Sorry, but I don't have a clue. Maybe just a little bit.
 
 
 ## Changelog ##
+
+### 2.0.8 ###
+* Fix "async-upload" get_base(), check for empty sql for non-multisite types.
+* PHP unit tests to at least 3.9.13, update other travis WP versions.
 
 ### 2.0.7 ###
 * Add database check tool.
@@ -110,5 +114,5 @@ Sorry, but I don't have a clue. Maybe just a little bit.
 
 ## Upgrade Notice ##
 
-## 2.0.7 ##
+## 2.0.8 ##
 For normalization of pasted text and fuller normalization of all data.

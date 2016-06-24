@@ -3,7 +3,7 @@
  * Plugin Name: Normalizer
  * Plugin URI: https://github.com/Zodiac1978/tl-normalizer
  * Description: Normalizes UTF-8 input to Normalization Form C.
- * Version: 2.0.7
+ * Version: 2.0.8
  * Author: Torsten Landsiedel
  * Author URI: http://torstenlandsiedel.de
  * License: GPLv2
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 if ( ! defined( 'TLN_VERSION' ) ) {
 	// Need to be synced with "readme.txt".
-	define( 'TLN_VERSION', '2.0.7' );
+	define( 'TLN_VERSION', '2.0.8' );
 	define( 'TLN_WP_AT_LEAST_VERSION', '3.9.13' );
 	define( 'TLN_WP_UP_TO_VERSION', '4.5.3' );
 }

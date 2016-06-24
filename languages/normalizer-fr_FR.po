@@ -2,10 +2,10 @@
 # This file is distributed under the GPLv2.
 msgid ""
 msgstr ""
-"Project-Id-Version: Normalizer 2.0.7\n"
+"Project-Id-Version: Normalizer 2.0.8\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/tl-normalize\n"
-"POT-Creation-Date: 2016-06-22 02:34+0100\n"
-"PO-Revision-Date: 2016-06-22 02:34+0100\n"
+"POT-Creation-Date: 2016-06-24 16:02+0100\n"
+"PO-Revision-Date: 2016-06-24 16:02+0100\n"
 "Last-Translator: MB <mb@mb.ie>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -196,34 +196,34 @@ msgstr "Les données se sont désynchronisées&nbsp;!"
 msgid "No items selected!"
 msgstr "Aucun élément sélectionné&nbsp;!"
 
-#: class-tl-normalizer.php:1601 class-tl-normalizer.php:2031
+#: class-tl-normalizer.php:1604 class-tl-normalizer.php:2040
 msgid "..."
 msgstr "..."
 
 #. translators: %s: formatted number of items detected.
-#: class-tl-normalizer.php:1638
+#: class-tl-normalizer.php:1641
 msgid "%s non-normalized item detected."
 msgid_plural "%s non-normalized items detected."
 msgstr[0] "%s élement non-normalisé a détecté."
 msgstr[1] "%s élements non-normalisées ont détecté."
 
-#: class-tl-normalizer.php:1641
+#: class-tl-normalizer.php:1644
 msgid "<strong>No</strong> non-normalized data detected!"
 msgstr "<strong>Aucune</strong> donnée non-normalisée a détecté&nbsp;!"
 
 #. translators: %s: formatted number of items normalized.
-#: class-tl-normalizer.php:1816
+#: class-tl-normalizer.php:1822
 msgid "%s item normalized."
 msgid_plural "%s items normalized."
 msgstr[0] "%s élément a normalisé."
 msgstr[1] "%s éléments ont normalisé."
 
-#: class-tl-normalizer.php:1818 class-tl-normalizer.php:2245
+#: class-tl-normalizer.php:1824 class-tl-normalizer.php:2254
 msgid "Nothing updated!"
 msgstr "Rien mis à jour&nbsp;!"
 
 #. translators: %s: formatted number of items locked.
-#: class-tl-normalizer.php:1823
+#: class-tl-normalizer.php:1829
 msgid "%s item not normalized, somebody is editing it."
 msgid_plural "%s items not normalized, somebody is editing them."
 msgstr[0] ""
@@ -234,34 +234,34 @@ msgstr[1] ""
 "les modifier."
 
 #. translators: %s: formatted number of items that failed to normalize.
-#: class-tl-normalizer.php:1829
+#: class-tl-normalizer.php:1835
 msgid "%s item not normalized, failed to normalize."
 msgid_plural "%s items not normalized, failed to normalize."
 msgstr[0] "%s élément n&rsquo;a pas normalisé, échoué à normaliser."
 msgstr[1] "%s éléments n&rsquo;ont pas normalisé, échoué à normaliser."
 
 #. translators: %s: formatted number of percent-encoded items detected.
-#: class-tl-normalizer.php:2065
+#: class-tl-normalizer.php:2074
 msgid "%s non-normalized percent-encoded slug detected."
 msgid_plural "%s non-normalized percent-encoded slugs detected."
 msgstr[0] "%s identifiant pour-cent encodé non-normalisé a détecté."
 msgstr[1] "%s identifiants pour-cent encodés non-normalisés ont détecté."
 
-#: class-tl-normalizer.php:2069
+#: class-tl-normalizer.php:2078
 msgid "<strong>No</strong> non-normalized percent-encoded slugs detected!"
 msgstr ""
 "<strong>Aucun</strong> identifiant pour-cent encodé non-normalisé a "
 "détecté&nbsp;!"
 
 #. translators: %s: formatted number of slugs normalized.
-#: class-tl-normalizer.php:2243
+#: class-tl-normalizer.php:2252
 msgid "%s slug normalized."
 msgid_plural "%s slugs normalized."
 msgstr[0] "%s identifiant a normalisé."
 msgstr[1] "%s identifiants ont normalisé."
 
 #. translators: %s: formatted number of items locked.
-#: class-tl-normalizer.php:2250
+#: class-tl-normalizer.php:2259
 msgid "%s slug not normalized, somebody is editing it."
 msgid_plural "%s slugs not normalized, somebody is editing them."
 msgstr[0] ""
@@ -272,21 +272,21 @@ msgstr[1] ""
 "de les modifier."
 
 #. translators: %s: formatted number of slugs not found.
-#: class-tl-normalizer.php:2256
+#: class-tl-normalizer.php:2265
 msgid "%s slug not normalized, no longer exists."
 msgid_plural "%s slugs not normalized, no longer exist."
 msgstr[0] "%s identifiant n&rsquo;a pas normalisé, n&rsquo;existe plus."
 msgstr[1] "%s identifiants n&rsquo;ont pas normalisé, n&rsquo;existent plus."
 
 #. translators: %s: formatted number of slugs not non-normalized.
-#: class-tl-normalizer.php:2262
+#: class-tl-normalizer.php:2271
 msgid "%s slug not normalized, no longer non-normalized."
 msgid_plural "%s slugs not normalized, no longer non-normalized."
 msgstr[0] "%s identifiant n&rsquo;a pas normalisé, plus non-normalisé."
 msgstr[1] "%s identifiants n&rsquo;ont pas normalisé, plus non-normalisé."
 
 #. translators: %s: formatted number of slugs that failed to normalize.
-#: class-tl-normalizer.php:2268
+#: class-tl-normalizer.php:2277
 msgid "%s slug not normalized, failed to normalize."
 msgid_plural "%s slugs not normalized, failed to normalize."
 msgstr[0] "%s identifiant n&rsquo;a pas normalisé, échoué à normaliser."

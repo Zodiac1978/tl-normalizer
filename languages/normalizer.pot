@@ -2,9 +2,9 @@
 # This file is distributed under the GPLv2.
 msgid ""
 msgstr ""
-"Project-Id-Version: Normalizer 2.0.7\n"
+"Project-Id-Version: Normalizer 2.0.8\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/tl-normalize\n"
-"POT-Creation-Date: 2016-06-22 01:33:39+00:00\n"
+"POT-Creation-Date: 2016-06-24 15:01:51+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -173,86 +173,86 @@ msgstr ""
 msgid "No items selected!"
 msgstr ""
 
-#: class-tl-normalizer.php:1601 class-tl-normalizer.php:2031
+#: class-tl-normalizer.php:1604 class-tl-normalizer.php:2040
 msgid "..."
 msgstr ""
 
-#: class-tl-normalizer.php:1638
+#: class-tl-normalizer.php:1641
 #. translators: %s: formatted number of items detected.
 msgid "%s non-normalized item detected."
 msgid_plural "%s non-normalized items detected."
 msgstr[0] ""
 msgstr[1] ""
 
-#: class-tl-normalizer.php:1641
+#: class-tl-normalizer.php:1644
 msgid "<strong>No</strong> non-normalized data detected!"
 msgstr ""
 
-#: class-tl-normalizer.php:1816
+#: class-tl-normalizer.php:1822
 #. translators: %s: formatted number of items normalized.
 msgid "%s item normalized."
 msgid_plural "%s items normalized."
 msgstr[0] ""
 msgstr[1] ""
 
-#: class-tl-normalizer.php:1818 class-tl-normalizer.php:2245
+#: class-tl-normalizer.php:1824 class-tl-normalizer.php:2254
 msgid "Nothing updated!"
 msgstr ""
 
-#: class-tl-normalizer.php:1823
+#: class-tl-normalizer.php:1829
 #. translators: %s: formatted number of items locked.
 msgid "%s item not normalized, somebody is editing it."
 msgid_plural "%s items not normalized, somebody is editing them."
 msgstr[0] ""
 msgstr[1] ""
 
-#: class-tl-normalizer.php:1829
+#: class-tl-normalizer.php:1835
 #. translators: %s: formatted number of items that failed to normalize.
 msgid "%s item not normalized, failed to normalize."
 msgid_plural "%s items not normalized, failed to normalize."
 msgstr[0] ""
 msgstr[1] ""
 
-#: class-tl-normalizer.php:2065
+#: class-tl-normalizer.php:2074
 #. translators: %s: formatted number of percent-encoded items detected.
 msgid "%s non-normalized percent-encoded slug detected."
 msgid_plural "%s non-normalized percent-encoded slugs detected."
 msgstr[0] ""
 msgstr[1] ""
 
-#: class-tl-normalizer.php:2069
+#: class-tl-normalizer.php:2078
 msgid "<strong>No</strong> non-normalized percent-encoded slugs detected!"
 msgstr ""
 
-#: class-tl-normalizer.php:2243
+#: class-tl-normalizer.php:2252
 #. translators: %s: formatted number of slugs normalized.
 msgid "%s slug normalized."
 msgid_plural "%s slugs normalized."
 msgstr[0] ""
 msgstr[1] ""
 
-#: class-tl-normalizer.php:2250
+#: class-tl-normalizer.php:2259
 #. translators: %s: formatted number of items locked.
 msgid "%s slug not normalized, somebody is editing it."
 msgid_plural "%s slugs not normalized, somebody is editing them."
 msgstr[0] ""
 msgstr[1] ""
 
-#: class-tl-normalizer.php:2256
+#: class-tl-normalizer.php:2265
 #. translators: %s: formatted number of slugs not found.
 msgid "%s slug not normalized, no longer exists."
 msgid_plural "%s slugs not normalized, no longer exist."
 msgstr[0] ""
 msgstr[1] ""
 
-#: class-tl-normalizer.php:2262
+#: class-tl-normalizer.php:2271
 #. translators: %s: formatted number of slugs not non-normalized.
 msgid "%s slug not normalized, no longer non-normalized."
 msgid_plural "%s slugs not normalized, no longer non-normalized."
 msgstr[0] ""
 msgstr[1] ""
 
-#: class-tl-normalizer.php:2268
+#: class-tl-normalizer.php:2277
 #. translators: %s: formatted number of slugs that failed to normalize.
 msgid "%s slug not normalized, failed to normalize."
 msgid_plural "%s slugs not normalized, failed to normalize."
