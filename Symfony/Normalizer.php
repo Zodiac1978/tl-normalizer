@@ -56,7 +56,7 @@ define( 'TLN_REGEX_IS_INVALID_UTF8',
 );
 if ( version_compare( PCRE_VERSION, '8.31', '<' ) ) {
 	// If before RFC 3629 compliance or if UTF-8 mode not available.
-	if ( version_compare( PCRE_VERSION, '7.3', '<' ) || false === preg_match( '//u', '' ) ) {
+	if ( version_compare( PCRE_VERSION, '7.3', '<' ) || false === @preg_match( '//u', '' ) ) {
 		function tln_is_valid_utf8( $str ) {
 			return 1 !== preg_match( TLN_REGEX_IS_INVALID_UTF8, $str );
 		}
