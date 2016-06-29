@@ -455,6 +455,7 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 		$this->assertTrue( tln_is_valid_utf8( $str ) );
 		$this->assertTrue( 1 === preg_match( TLN_REGEX_IS_VALID_UTF8, $str ) );
 		if ( version_compare( PCRE_VERSION, '7.3', '>=' ) && version_compare( PCRE_VERSION, '8.32', '!=' ) ) { // RFC 3629 compliant and without 8.32 regression (rejecting non-characters).
+			error_log( "PCRE_VERSION=" . PCRE_VERSION . ", version_compare=" . version_compare( PCRE_VERSION, '8.32' ) );
 			$this->assertTrue( 1 === preg_match( '//u', $str ) );
 		}
 		if ( version_compare( PHP_VERSION, '5.3.4', '>=' ) ) { // RFC 3629 compliant.
