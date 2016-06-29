@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Normalizer 2.0.8\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/tl-normalize\n"
-"POT-Creation-Date: 2016-06-24 15:01:51+00:00\n"
+"POT-Creation-Date: 2016-06-29 15:09:16+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -259,72 +259,72 @@ msgid_plural "%s slugs not normalized, failed to normalize."
 msgstr[0] ""
 msgstr[1] ""
 
-#: class-tln-db_check-list-table.php:43
+#: class-tln-db_check-list-table.php:44
 msgid "Post, Page"
 msgstr ""
 
-#: class-tln-db_check-list-table.php:45
+#: class-tln-db_check-list-table.php:46
 msgid "Category, Tag"
 msgstr ""
 
-#: class-tln-db_check-list-table.php:46
+#: class-tln-db_check-list-table.php:47
 msgid "User"
 msgstr ""
 
-#: class-tln-db_check-list-table.php:47
+#: class-tln-db_check-list-table.php:48
 msgid "Options"
 msgstr ""
 
-#: class-tln-db_check-list-table.php:48
+#: class-tln-db_check-list-table.php:49
 msgid "Settings"
 msgstr ""
 
-#: class-tln-db_check-list-table.php:49
+#: class-tln-db_check-list-table.php:50
 msgid "Link"
 msgstr ""
 
-#: class-tln-db_check-list-table.php:171
+#: class-tln-db_check-list-table.php:174
 #. translators: %s: menu item name
 msgid "Edit the menu containing this menu item"
 msgstr ""
 
-#: class-tln-db_check-list-table.php:186
+#: class-tln-db_check-list-table.php:189
 msgid "Edit this user"
 msgstr ""
 
-#: class-tln-db_check-list-table.php:331 class-tln-db_check-list-table.php:431
+#: class-tln-db_check-list-table.php:334 class-tln-db_check-list-table.php:434
 msgid "Type"
 msgstr ""
 
-#: class-tln-db_check-list-table.php:332
+#: class-tln-db_check-list-table.php:335
 msgid "Field (1st detected only)"
 msgstr ""
 
-#: class-tln-db_check-list-table.php:417
+#: class-tln-db_check-list-table.php:420
 msgid "Normalize"
 msgstr ""
 
-#: class-tln-db_check-list-table.php:432
+#: class-tln-db_check-list-table.php:435
 msgid "Slug"
 msgstr ""
 
-#: class-tln-db_check-list-table.php:433
+#: class-tln-db_check-list-table.php:436
 msgid "Decoded"
 msgstr ""
 
-#: class-tln-db_check-list-table.php:434
+#: class-tln-db_check-list-table.php:437
 msgid "If Normalized"
 msgstr ""
 
-#: class-tln-db_check-list-table.php:435
+#: class-tln-db_check-list-table.php:438
 msgid "Normalized Decoded"
 msgstr ""
 
-#: class-tln-db_check-list-table.php:498 class-tln-db_check-list-table.php:515
+#: class-tln-db_check-list-table.php:501 class-tln-db_check-list-table.php:518
 msgid "Not normalizable!"
 msgstr ""
 
-#: class-tln-db_check-list-table.php:503 class-tln-db_check-list-table.php:520
+#: class-tln-db_check-list-table.php:506 class-tln-db_check-list-table.php:523
 msgid "No difference!"
 msgstr ""
 

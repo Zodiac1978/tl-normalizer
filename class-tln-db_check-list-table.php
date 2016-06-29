@@ -15,6 +15,7 @@ class TLN_DB_Check_List_Table extends TLN_List_Table {
 	var $all_items = null; // Reference to all the items (as opposed to per-page $items); points to either $db_check_items or $db_check_slugs. Set by children.
 
 	var $standard_types = array(); // Map of standard types to names. Populated in __construct().
+	var $blog_charset = null; // Needed for htmlspecialchars(). Set in __construct().
 
 	var $suptypes = array(); // Map of "supertypes" to types. Ie. 'post' and 'term' types which can have types 'attachment', 'category' etc.
 	var $types = array(); // Map of types to names. Populated with types and custom ones in add_type().
@@ -48,6 +49,8 @@ class TLN_DB_Check_List_Table extends TLN_List_Table {
 			'settings' => __( 'Settings', 'normalizer' ),
 			'link' => __( 'Link', 'normalizer' ),
 		);
+
+		$this->blog_charset = get_option( 'blog_charset' );
 	}
 
 	// Overridden methods.
@@ -209,9 +212,9 @@ class TLN_DB_Check_List_Table extends TLN_List_Table {
 			$url = '';
 		}
 		if ( $url ) {
-			printf( '<a class="row-title" href="%s"%s>%s</a>', esc_url( $url ), $aria_label_html, htmlspecialchars( $item['title'], ENT_NOQUOTES ) );
+			printf( '<a class="row-title" href="%s"%s>%s</a>', esc_url( $url ), $aria_label_html, htmlspecialchars( $item['title'], ENT_NOQUOTES, $this->blog_charset ) );
 		} else {
-			echo htmlspecialchars( $item['title'], ENT_NOQUOTES );
+			echo htmlspecialchars( $item['title'], ENT_NOQUOTES, $this->blog_charset );
 		}
 	}
 
@@ -234,7 +237,7 @@ class TLN_DB_Check_List_Table extends TLN_List_Table {
 	 * Output "Type" column.
 	 */
 	function column_type( $item ) {
-		echo htmlspecialchars( $this->types[ $item['subtype'] ], ENT_NOQUOTES ); // Note: signed-up member of the Extraordinarily Severe Campaign Against Pointless Encoding.
+		echo htmlspecialchars( $this->types[ $item['subtype'] ], ENT_NOQUOTES, $this->blog_charset ); // Note: signed-up member of the Extraordinarily Severe Campaign Against Pointless Encoding.
 	}
 
 	/**
@@ -356,7 +359,7 @@ class TLN_DB_Check_Items_List_Table extends TLN_DB_Check_List_Table {
 	 * Output "Field" column.
 	 */
 	function column_field( $item ) {
-		echo htmlspecialchars( $item['field'], ENT_NOQUOTES );
+		echo htmlspecialchars( $item['field'], ENT_NOQUOTES, $this->blog_charset );
 	}
 
 	/**
@@ -470,7 +473,7 @@ class TLN_DB_Check_Slugs_List_Table extends TLN_DB_Check_List_Table {
 	 * Output "Slug" column.
 	 */
 	function column_slug( $item ) {
-		echo htmlspecialchars( $item['slug'], ENT_NOQUOTES );
+		echo htmlspecialchars( $item['slug'], ENT_NOQUOTES, $this->blog_charset );
 	}
 
 	/**
@@ -484,7 +487,7 @@ class TLN_DB_Check_Slugs_List_Table extends TLN_DB_Check_List_Table {
 	 * Output "Decoded" column.
 	 */
 	function column_decoded( $item ) {
-		echo htmlspecialchars( rawurldecode( $item['slug'] ), ENT_NOQUOTES ); // Note using real rawurldecode() not our subset version TLNormalizer::percent_decode().
+		echo htmlspecialchars( rawurldecode( $item['slug'] ), ENT_NOQUOTES, $this->blog_charset ); // Note using real rawurldecode() not our subset version TLNormalizer::percent_decode().
 	}
 
 	/**
@@ -497,7 +500,7 @@ class TLN_DB_Check_Slugs_List_Table extends TLN_DB_Check_List_Table {
 			if ( false === $normalized ) {
 				_e( 'Not normalizable!', 'normalizer' );
 			} else {
-				echo htmlspecialchars( TLNormalizer::percent_encode( $normalized ), ENT_NOQUOTES );
+				echo htmlspecialchars( TLNormalizer::percent_encode( $normalized ), ENT_NOQUOTES, $this->blog_charset );
 			}
 		} else {
 			_e( 'No difference!', 'normalizer' );
@@ -514,7 +517,7 @@ class TLN_DB_Check_Slugs_List_Table extends TLN_DB_Check_List_Table {
 			if ( false === $normalized ) {
 				_e( 'Not normalizable!', 'normalizer' );
 			} else {
-				echo htmlspecialchars( rawurldecode( TLNormalizer::percent_encode( $normalized ) ), ENT_NOQUOTES ); // Re-encode and rawurldecode to give accurate representation.
+				echo htmlspecialchars( rawurldecode( TLNormalizer::percent_encode( $normalized ) ), ENT_NOQUOTES, $this->blog_charset ); // Re-encode & rawurldecode to give accurate representation.
 			}
 		} else {
 			_e( 'No difference!', 'normalizer' );

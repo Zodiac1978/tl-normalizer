@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Normalizer 2.0.8\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/tl-normalize\n"
-"POT-Creation-Date: 2016-06-24 16:02+0100\n"
-"PO-Revision-Date: 2016-06-24 16:02+0100\n"
+"POT-Creation-Date: 2016-06-29 16:11+0100\n"
+"PO-Revision-Date: 2016-06-29 16:11+0100\n"
 "Last-Translator: MB <mb@mb.ie>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -292,72 +292,72 @@ msgid_plural "%s slugs not normalized, failed to normalize."
 msgstr[0] "%s identifiant n&rsquo;a pas normalisé, échoué à normaliser."
 msgstr[1] "%s identifiants n&rsquo;ont pas normalisé, échoué à normaliser."
 
-#: class-tln-db_check-list-table.php:43
+#: class-tln-db_check-list-table.php:44
 msgid "Post, Page"
 msgstr "Article, Page"
 
-#: class-tln-db_check-list-table.php:45
+#: class-tln-db_check-list-table.php:46
 msgid "Category, Tag"
 msgstr "Catégorie, Étiquette"
 
-#: class-tln-db_check-list-table.php:46
+#: class-tln-db_check-list-table.php:47
 msgid "User"
 msgstr "Utilisateur"
 
-#: class-tln-db_check-list-table.php:47
+#: class-tln-db_check-list-table.php:48
 msgid "Options"
 msgstr "Options"
 
-#: class-tln-db_check-list-table.php:48
+#: class-tln-db_check-list-table.php:49
 msgid "Settings"
 msgstr "Réglages"
 
-#: class-tln-db_check-list-table.php:49
+#: class-tln-db_check-list-table.php:50
 msgid "Link"
 msgstr "Lien"
 
 #. translators: %s: menu item name
-#: class-tln-db_check-list-table.php:171
+#: class-tln-db_check-list-table.php:174
 msgid "Edit the menu containing this menu item"
 msgstr "Modifier le menu contenant cette entrée du menu"
 
-#: class-tln-db_check-list-table.php:186
+#: class-tln-db_check-list-table.php:189
 msgid "Edit this user"
 msgstr "Éditer cet utilisateur"
 
-#: class-tln-db_check-list-table.php:331 class-tln-db_check-list-table.php:431
+#: class-tln-db_check-list-table.php:334 class-tln-db_check-list-table.php:434
 msgid "Type"
 msgstr "Type"
 
-#: class-tln-db_check-list-table.php:332
+#: class-tln-db_check-list-table.php:335
 msgid "Field (1st detected only)"
 msgstr "Champ (1er détecté seulement)"
 
-#: class-tln-db_check-list-table.php:417
+#: class-tln-db_check-list-table.php:420
 msgid "Normalize"
 msgstr "Normaliser"
 
-#: class-tln-db_check-list-table.php:432
+#: class-tln-db_check-list-table.php:435
 msgid "Slug"
 msgstr "Identifiant"
 
-#: class-tln-db_check-list-table.php:433
+#: class-tln-db_check-list-table.php:436
 msgid "Decoded"
 msgstr "Décodé"
 
-#: class-tln-db_check-list-table.php:434
+#: class-tln-db_check-list-table.php:437
 msgid "If Normalized"
 msgstr "Si normalisé"
 
-#: class-tln-db_check-list-table.php:435
+#: class-tln-db_check-list-table.php:438
 msgid "Normalized Decoded"
 msgstr "Normalisé décodé"
 
-#: class-tln-db_check-list-table.php:498 class-tln-db_check-list-table.php:515
+#: class-tln-db_check-list-table.php:501 class-tln-db_check-list-table.php:518
 msgid "Not normalizable!"
 msgstr "Non-normalisable&nbsp;!"
 
-#: class-tln-db_check-list-table.php:503 class-tln-db_check-list-table.php:520
+#: class-tln-db_check-list-table.php:506 class-tln-db_check-list-table.php:523
 msgid "No difference!"
 msgstr "Aucune différence&nbsp;!"
 

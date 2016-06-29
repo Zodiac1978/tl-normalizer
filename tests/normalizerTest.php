@@ -447,6 +447,100 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 		}
 	}
 
+	/**
+	 * @ticket tln_is_valid_utf8_true
+	 * @dataProvider data_is_valid_utf8_true
+	 */
+	function test_is_valid_utf8_true( $str ) {
+		$this->assertTrue( tln_is_valid_utf8( $str ) );
+		$this->assertTrue( 1 === preg_match( TLN_REGEX_IS_VALID_UTF8, $str ) );
+		if ( version_compare( PCRE_VERSION, '7.3', '>=' ) ) { // RFC 3629 compliant.
+			$this->assertTrue( 1 === preg_match( '//u', $str ) );
+		}
+		if ( version_compare( PHP_VERSION, '5.3.4', '>=' ) ) { // RFC 3629 compliant.
+			$this->assertTrue( '' === $str || '' !== htmlspecialchars( $str, ENT_NOQUOTES, 'UTF-8' ) );
+		}
+		$this->assertTrue( 1 !== preg_match( TLN_REGEX_IS_INVALID_UTF8, $str ) );
+	}
+
+	function data_is_valid_utf8_true() {
+		$ret = array(
+			array( "\x00" ), array( "a" ), array( "\x7f" ), array( "a\x7f" ), array( "\xc2\x80" ),
+			array( "\xdf\xaf" ), array( "a\xdf\xbf" ), array( "\xdf\xbfb" ), array( "a\xde\xbfb" ), array( "\xe0\xa0\x80" ),
+			array( "\xef\xbf\xbf" ), array( "a\xe1\x80\x80" ), array( "\xe3\x80\x80b" ), array( "a\xe4\xbf\xbfb" ), array( "\xf0\x90\x80\x80" ), array( "\xf4\x8f\xbf\xbf" ),
+			array( "a\xf1\x80\x80\x80" ), array( "\xf2\x80\x80\x80b" ), array( "a\xf3\xbf\xbf\xbfb" ),
+		);
+
+		// From "tests/phpunit/tests/formatting/SeemsUtf8.php".
+		$utf8_strings = file( DIR_TESTDATA . '/formatting/utf-8/utf-8.txt' );
+		foreach ( $utf8_strings as &$string ) {
+			$string = (array) trim( $string );
+		}
+		unset( $string );
+
+		$ret = array_merge( $ret, $utf8_strings );
+		return $ret;
+	}
+
+	/**
+	 * @ticket tln_is_valid_utf8_false
+	 * @dataProvider data_is_valid_utf8_false
+	 */
+	function test_is_valid_utf8_false( $str ) {
+		$this->assertFalse( tln_is_valid_utf8( $str ) );
+		$this->assertFalse( 1 === preg_match( TLN_REGEX_IS_VALID_UTF8, $str ) );
+		if ( version_compare( PCRE_VERSION, '7.3', '>=' ) ) { // RFC 3629 compliant.
+			$this->assertFalse( 1 === preg_match( '//u', $str ) );
+		}
+		if ( version_compare( PHP_VERSION, '5.3.4', '>=' ) ) { // RFC 3629 compliant.
+			$this->assertFalse( '' === $str || '' !== htmlspecialchars( $str, ENT_NOQUOTES, 'UTF-8' ) );
+		}
+		$this->assertFalse( 1 !== preg_match( TLN_REGEX_IS_INVALID_UTF8, $str ) );
+	}
+
+	function data_is_valid_utf8_false() {
+		$ret = array(
+			array( "\x80" ), array( "\xff" ), array( "a\x81" ), array( "\x83b" ), array( "a\x81b" ),
+			array( "ab\xff"), array( "\xc2\x7f" ), array( "\xc0\x80" ), array( "\xc1\x80" ), array( "a\xc2\xc0" ),
+			array( "a\xd0\x7fb" ), array( "ab\xdf\xc0" ), array( "\xe2\x80" ), array( "a\xe2\x80" ), array( "a\xe2\x80b" ),
+			array( "\xf1\x80" ), array( "\xe1\x7f\x80" ), array( "\xe0\x9f\x80" ), array( "\xed\xa0\x80" ), array( "\xef\x7f\x80" ),
+			array( "\xef\xbf\xc0" ), array( "\xc2\xa0\x80" ), array( "\xf0\x90\x80" ), array( "\xe2\xa0\x80\x80" ), array( "\xf5\x80\x80\x80" ),
+			array( "\xf0\x8f\x80\x80" ), array( "\xf4\x90\x80\x80" ), array( "\xf5\x80\x80\x80\x80" ), array( "a\xf5\x80\x80\x80\x80" ), array( "a\xf5\x80\x80\x80\x80b" ),
+			array( "a\xc2\x80\x80b" ), array( "a\xc2\x80\xef\xbf\xbf\x80c" ), array( "a\xc2\x80\xe2\x80\x80\xf3\x80\x80\x80\x80b" ),
+		);
+
+		// From "tests/phpunit/tests/formatting/SeemsUtf8.php".
+		$big5_strings = file( DIR_TESTDATA . '/formatting/big5.txt' );
+		foreach ( $big5_strings as &$string ) {
+			$string = (array) trim( $string );
+		}
+		unset( $string );
+
+		$ret = array_merge( $ret, $big5_strings );
+		return $ret;
+	}
+
+	/**
+	 * @ticket tln_is_valid_utf8_false_random
+	 */
+	function test_is_valid_utf8_false_random() {
+		require_once dirname( dirname( __FILE__ ) ) . '/tools/functions.php';
+
+		$num_tests = self::$doing_coverage ? 100 : 42000; // Shorten lengthy tests if doing code coverage.
+		for ( $i = 0; $i < $num_tests; $i++ ) {
+			$str = tln_utf8_rand_ratio_str( 100, 0.1 );
+			$this->assertFalse( tln_is_valid_utf8( $str ) );
+			$this->assertFalse( 1 === preg_match( TLN_REGEX_IS_VALID_UTF8, $str ) );
+			if ( version_compare( PCRE_VERSION, '7.3', '>=' ) ) { // RFC 3629 compliant.
+				$this->assertFalse( 1 === preg_match( '//u', $str ) );
+			}
+			if ( version_compare( PHP_VERSION, '5.3.4', '>=' ) ) { // RFC 3629 compliant.
+				$this->assertFalse( '' === $str || '' !== htmlspecialchars( $str, ENT_NOQUOTES, 'UTF-8' ) );
+			}
+			$this->assertFalse( 1 !== preg_match( TLN_REGEX_IS_INVALID_UTF8, $str ) );
+		}
+	}
+
     private static function chr($c)
     {
         if (0x80 > $c %= 0x200000) {

@@ -39,26 +39,35 @@ define( 'TLN_REGEX_IS_VALID_UTF8',
 			| \xf4[\x80-\x8f][\x80-\xbf][\x80-\xbf]           # plane 16
 			)*+\z/x'
 );
-// Unfortunately the above seg faults for older versions of PCRE. 8.31 (06-Jul-2012, bundled with PHP 5.3.19) is lowest known working version, might work for lower.
-// Definitely doesn't work for 8.12 (15-Jan-2011, bundled with PHP 5.3.18). So use a negative formulation for these (over 300% slower for < 1% invalid), or UTF-8 mode if available.
+// Unfortunately the above seg faults for older versions of PCRE for strings > ~1K. PCRE 8.31 (06-Jul-2012, bundled with PHP 5.3.19) is lowest known working version, might work for lower.
+// Definitely doesn't work for PCRE 8.12 (15-Jan-2011, bundled with PHP 5.3.18). So for PCRE < 8.31 use UTF-8 mode if available and compliant, or htmlspecialchars() if compliant,
+// or as a last resort the following regex, a negated version of the above.
 define( 'TLN_REGEX_IS_INVALID_UTF8',
 			'/
 			  [\xc0\xc1\xf5-\xff]
-			| [\xc2-\xf4][^\x80-\xbf]
-			| [\xe0-\xf4][\x80-\xbf][^\x80-\xbf]
-			| [\xf0-\xf4][\x80-\xbf][\x80-\xbf][^\x80-\xbf]
+			| [\xc2-\xf4](?: [^\x80-\xbf] | \z )
+			| [\xe0-\xf4][\x80-\xbf](?: [^\x80-\xbf] | \z )
+			| [\xf0-\xf4][\x80-\xbf][\x80-\xbf](?: [^\x80-\xbf] | \z )
 			| [\xed\xf4][\xa0-\xbf]
 			| [\xe0\xf0][\x80-\x8f]
 			| [\xe0\xf4][\x90-\x9f]
 			| (?<= \A | [\x00-\x7f] | [\xc2-\xdf][\x80-\xbf] | [\xe0-\xef][\x80-\xbf][\x80-\xbf] | [\xf0-\xf4][\x80-\xbf][\x80-\xbf][\x80-\xbf] )[\x80-\xbf]
-			| [\xc2-\xf4]\z
-			/sx'
+			/x'
 );
 if ( version_compare( PCRE_VERSION, '8.31', '<' ) ) {
-	// If before RFC 3629 compliance or if UTF-8 mode not available.
+	// If before PCRE RFC 3629 compliance or if UTF-8 mode not available.
 	if ( version_compare( PCRE_VERSION, '7.3', '<' ) || false === @preg_match( '//u', '' ) ) {
-		function tln_is_valid_utf8( $str ) {
-			return 1 !== preg_match( TLN_REGEX_IS_INVALID_UTF8, $str );
+		// If before htmlspecialchars() RFC 3629 compliance.
+		if ( version_compare( PHP_VERSION, '5.3.4', '<' ) ) {
+			function tln_is_valid_utf8( $str ) {
+				// Very slow for valid strings.
+				return 1 !== preg_match( TLN_REGEX_IS_INVALID_UTF8, $str );
+			}
+		} else {
+			function tln_is_valid_utf8( $str ) {
+				// See https://core.trac.wordpress.org/ticket/29717#comment:11
+				return '' === $str || '' !== htmlspecialchars( $str, ENT_NOQUOTES, 'UTF-8' );
+			}
 		}
 	} else {
 		function tln_is_valid_utf8( $str ) {
