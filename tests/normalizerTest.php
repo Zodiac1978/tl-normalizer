@@ -62,6 +62,8 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 		global $argv;
 		$grep = preg_grep( '/--coverage/', $argv );
 		self::$doing_coverage = ! empty( $grep );
+
+		error_log( "PCRE_VERSION=" . PCRE_VERSION );
 	}
 
 	static function wpTearDownAfterClass() {
@@ -455,6 +457,7 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 		$this->assertTrue( tln_is_valid_utf8( $str ) );
 		$this->assertTrue( 1 === preg_match( TLN_REGEX_IS_VALID_UTF8, $str ) );
 		if ( version_compare( PCRE_VERSION, '7.3', '>=' ) ) { // RFC 3629 compliant.
+			error_log( "str=" . bin2hex( $str ) );
 			$this->assertTrue( 1 === preg_match( '//u', $str ) );
 		}
 		if ( version_compare( PHP_VERSION, '5.3.4', '>=' ) ) { // RFC 3629 compliant.
@@ -467,9 +470,8 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 		$ret = array(
 			array( "\x00" ), array( "a" ), array( "\x7f" ), array( "a\x7f" ), array( "\xc2\x80" ),
 			array( "\xdf\xaf" ), array( "a\xdf\xbf" ), array( "\xdf\xbfb" ), array( "a\xde\xbfb" ), array( "\xe0\xa0\x80" ),
-			array( "\xef\xbf\xbf" ), array( "a\xe1\x80\x80" ), array( "\xe3\x80\x80b" ), array( "a\xe4\xbf\xbfb" ), array( "\xf0\x90\x80\x80" ), array( "\xf4\x8f\xbf\xbf" ),
-			array( "a\xf1\x80\x80\x80" ), array( "\xf2\x80\x80\x80b" ), array( "a\xf3\xbf\xbf\xbfb" ),
-			array( "" ),
+			array( "\xef\xbf\xbf" ), array( "a\xe1\x80\x80" ), array( "\xe3\x80\x80b" ), array( "a\xe4\xbf\xbfb" ), array( "\xf0\x90\x80\x80" ),
+			array( "\xf4\x8f\xbf\xbf" ), array( "a\xf1\x80\x80\x80" ), array( "\xf2\x80\x80\x80b" ), array( "a\xf3\xbf\xbf\xbfb" ), array( "" ),
 		);
 
 		// From "tests/phpunit/tests/formatting/SeemsUtf8.php", "tests/phpunit/data/formatting/utf-8/utf-8.txt".
