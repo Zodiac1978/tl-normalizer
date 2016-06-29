@@ -472,7 +472,8 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 		);
 
 		// From "tests/phpunit/tests/formatting/SeemsUtf8.php".
-		$utf8_strings = file( DIR_TESTDATA . '/formatting/utf-8/utf-8.txt' );
+		global $_tests_dir; // For travis compat.
+		$utf8_strings = file( $_tests_dir . '/data/formatting/utf-8/utf-8.txt' );
 		foreach ( $utf8_strings as &$string ) {
 			$string = (array) trim( $string );
 		}
@@ -510,7 +511,8 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 		);
 
 		// From "tests/phpunit/tests/formatting/SeemsUtf8.php".
-		$big5_strings = file( DIR_TESTDATA . '/formatting/big5.txt' );
+		global $_tests_dir; // For travis compat.
+		$big5_strings = file( $_tests_dir . '/data/formatting/big5.txt' );
 		foreach ( $big5_strings as &$string ) {
 			$string = (array) trim( $string );
 		}
