@@ -469,15 +469,18 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 			array( "\xdf\xaf" ), array( "a\xdf\xbf" ), array( "\xdf\xbfb" ), array( "a\xde\xbfb" ), array( "\xe0\xa0\x80" ),
 			array( "\xef\xbf\xbf" ), array( "a\xe1\x80\x80" ), array( "\xe3\x80\x80b" ), array( "a\xe4\xbf\xbfb" ), array( "\xf0\x90\x80\x80" ), array( "\xf4\x8f\xbf\xbf" ),
 			array( "a\xf1\x80\x80\x80" ), array( "\xf2\x80\x80\x80b" ), array( "a\xf3\xbf\xbf\xbfb" ),
+			array( "" ),
 		);
 
-		// From "tests/phpunit/tests/formatting/SeemsUtf8.php".
-		global $_tests_dir; // For travis compat.
-		$utf8_strings = file( $_tests_dir . '/data/formatting/utf-8/utf-8.txt' );
-		foreach ( $utf8_strings as &$string ) {
-			$string = (array) trim( $string );
-		}
-		unset( $string );
+		// From "tests/phpunit/tests/formatting/SeemsUtf8.php", "tests/phpunit/data/formatting/utf-8/utf-8.txt".
+		$utf8_strings = array(
+			array( "\xe7\xab\xa0\xe5\xad\x90\xe6\x80\xa1" ),
+			array( "\x46\x72\x61\x6e\xc3\xa7\x6f\x69\x73\x20\x54\x72\x75\x66\x66\x61\x75\x74" ),
+			array( "\xe1\x83\xa1\xe1\x83\x90\xe1\x83\xa5\xe1\x83\x90\xe1\x83\xa0\xe1\x83\x97\xe1\x83\x95\xe1\x83\x94\xe1\x83\x9a\xe1\x83\x9d" ),
+			array( "\x42\x6a\xc3\xb6\x72\x6b\x20\x47\x75\xc3\xb0\x6d\x75\x6e\x64\x73\x64\xc3\xb3\x74\x74\x69\x72" ),
+			array( "\xe5\xae\xae\xe5\xb4\x8e\xe3\x80\x80\xe9\xa7\xbf" ),
+			array( "\xf0\x9f\x91\x8d" ),
+		);
 
 		$ret = array_merge( $ret, $utf8_strings );
 		return $ret;
@@ -510,13 +513,10 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 			array( "a\xc2\x80\x80b" ), array( "a\xc2\x80\xef\xbf\xbf\x80c" ), array( "a\xc2\x80\xe2\x80\x80\xf3\x80\x80\x80\x80b" ),
 		);
 
-		// From "tests/phpunit/tests/formatting/SeemsUtf8.php".
-		global $_tests_dir; // For travis compat.
-		$big5_strings = file( $_tests_dir . '/data/formatting/big5.txt' );
-		foreach ( $big5_strings as &$string ) {
-			$string = (array) trim( $string );
-		}
-		unset( $string );
+		// From "tests/phpunit/tests/formatting/SeemsUtf8.php", "tests/phpunit/data/formatting/big5.txt".
+		$big5_strings = array(
+			array( "\xaa\xa9\xa5\xbb" ), array( "\xa4\xc0\xc3\xfe" ), array( "\xc0\xf4\xb9\xd2" ), array( "\xa9\xca\xbd\xe8" ), array( "\xad\xba\xad\xb6" ),
+		);
 
 		$ret = array_merge( $ret, $big5_strings );
 		return $ret;
