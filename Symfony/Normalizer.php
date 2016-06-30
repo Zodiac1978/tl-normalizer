@@ -54,9 +54,9 @@ define( 'TLN_REGEX_IS_INVALID_UTF8',
 			| (?<= \A | [\x00-\x7f] | [\xc2-\xdf][\x80-\xbf] | [\xe0-\xef][\x80-\xbf][\x80-\xbf] | [\xf0-\xf4][\x80-\xbf][\x80-\xbf][\x80-\xbf] )[\x80-\xbf]
 			/x'
 );
-if ( version_compare( PCRE_VERSION, '8.31', '<' ) ) {
+if ( version_compare( substr( PCRE_VERSION, 0, strspn( PCRE_VERSION, '01234567890.-' ) ), '8.31', '<' ) ) {
 	// If before PCRE RFC 3629 compliance or if UTF-8 mode not available.
-	if ( version_compare( PCRE_VERSION, '7.3', '<' ) || false === @preg_match( '//u', '' ) ) {
+	if ( version_compare( substr( PCRE_VERSION, 0, strspn( PCRE_VERSION, '01234567890.-' ) ), '7.3', '<' ) || false === @preg_match( '//u', '' ) ) {
 		// If before htmlspecialchars() RFC 3629 compliance.
 		if ( version_compare( PHP_VERSION, '5.3.4', '<' ) ) {
 			function tln_is_valid_utf8( $str ) {

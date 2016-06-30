@@ -33,6 +33,7 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 	static $new_8_0_0 = array( 0x8e3, 0xa69e, /*0xa69f,*/ 0xfe2e, 0xfe2f, 0x111ca, 0x1172b, ); // Combining class additions UCD 8.0.0 over 7.0.0
 	static $new_8_0_0_regex = '';
 	static $at_least_55_1 = false;
+	static $pcre_version = PCRE_VERSION;
 	static $true = true;
 	static $false = false;
 	static $doing_coverage = false;
@@ -55,6 +56,7 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 			// Enable if using intl built with icu less than 56.1
 			self::$new_8_0_0_regex = '/' . implode( '|', array_map( __CLASS__.'::chr', self::$new_8_0_0 ) ) . '/';
 		}
+		self::$pcre_version = substr( PCRE_VERSION, 0, strspn( PCRE_VERSION, '01234567890.-' ) );
 
 		// Normalizer::isNormalized() returns an integer on HHVM and a boolean on PHP
 		list( self::$true, self::$false ) = defined( 'HHVM_VERSION' ) ? array( 1, 0 ) : array( true, false );
@@ -454,8 +456,7 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 	function test_is_valid_utf8_true( $str ) {
 		$this->assertTrue( tln_is_valid_utf8( $str ) );
 		$this->assertTrue( 1 === preg_match( TLN_REGEX_IS_VALID_UTF8, $str ) );
-		if ( version_compare( PCRE_VERSION, '7.3', '>=' ) && version_compare( PCRE_VERSION, '8.32', '!=' ) ) { // RFC 3629 compliant and without 8.32 regression (rejecting non-characters).
-			error_log( "PCRE_VERSION=" . PCRE_VERSION . ", version_compare=" . version_compare( PCRE_VERSION, '8.32' ) );
+		if ( version_compare( self::$pcre_version, '7.3', '>=' ) && version_compare( self::$pcre_version, '8.32', '!=' ) ) { // RFC 3629 compliant and without 8.32 regression (rejecting non-chars).
 			$this->assertTrue( 1 === preg_match( '//u', $str ) );
 		}
 		if ( version_compare( PHP_VERSION, '5.3.4', '>=' ) ) { // RFC 3629 compliant.
@@ -493,7 +494,7 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 	function test_is_valid_utf8_false( $str ) {
 		$this->assertFalse( tln_is_valid_utf8( $str ) );
 		$this->assertFalse( 1 === preg_match( TLN_REGEX_IS_VALID_UTF8, $str ) );
-		if ( version_compare( PCRE_VERSION, '7.3', '>=' ) && version_compare( PCRE_VERSION, '8.32', '!=' ) ) { // RFC 3629 compliant and without 8.32 regression (rejecting non-characters).
+		if ( version_compare( self::$pcre_version, '7.3', '>=' ) && version_compare( self::$pcre_version, '8.32', '!=' ) ) { // RFC 3629 compliant and without 8.32 regression (rejecting non-chars).
 			$this->assertFalse( 1 === preg_match( '//u', $str ) );
 		}
 		if ( version_compare( PHP_VERSION, '5.3.4', '>=' ) ) { // RFC 3629 compliant.
@@ -533,7 +534,7 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 			$str = tln_utf8_rand_ratio_str( 100, 0.1 );
 			$this->assertFalse( tln_is_valid_utf8( $str ) );
 			$this->assertFalse( 1 === preg_match( TLN_REGEX_IS_VALID_UTF8, $str ) );
-			if ( version_compare( PCRE_VERSION, '7.3', '>=' ) ) { // RFC 3629 compliant.
+			if ( version_compare( self::$pcre_version, '7.3', '>=' ) ) { // RFC 3629 compliant.
 				$this->assertFalse( 1 === preg_match( '//u', $str ) );
 			}
 			if ( version_compare( PHP_VERSION, '5.3.4', '>=' ) ) { // RFC 3629 compliant.
