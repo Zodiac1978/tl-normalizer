@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Normalizer 2.0.8\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/tl-normalize\n"
-"POT-Creation-Date: 2016-06-29 16:11+0100\n"
-"PO-Revision-Date: 2016-06-29 16:11+0100\n"
+"POT-Creation-Date: 2016-07-15 14:13+0100\n"
+"PO-Revision-Date: 2016-07-15 14:20+0100\n"
 "Last-Translator: MB <mb@mb.ie>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -68,6 +68,12 @@ msgstr "Nörmalizer vérifier la base de données"
 #: class-tl-normalizer.php:947
 msgid "Nörmalizer Db Check"
 msgstr "Nörmalizer vérifier"
+
+#: class-tl-normalizer.php:961 class-tl-normalizer.php:1164
+msgid "Sorry, you are not allowed to access this page."
+msgstr ""
+"Désolé, vous n&rsquo;avez pas l&rsquo;autorisation d&rsquo;accéder à cette "
+"page. "
 
 #: class-tl-normalizer.php:1230
 msgid "Rescan the Database"
@@ -296,6 +302,10 @@ msgstr[1] "%s identifiants n&rsquo;ont pas normalisé, échoué à normaliser."
 msgid "Post, Page"
 msgstr "Article, Page"
 
+#: class-tln-db_check-list-table.php:45
+msgid "Comment"
+msgstr "Commentaire"
+
 #: class-tln-db_check-list-table.php:46
 msgid "Category, Tag"
 msgstr "Catégorie, Étiquette"
@@ -321,9 +331,28 @@ msgstr "Lien"
 msgid "Edit the menu containing this menu item"
 msgstr "Modifier le menu contenant cette entrée du menu"
 
+#. translators: %s: post title
+#. translators: %s: taxonomy term name
+#: class-tln-db_check-list-table.php:180 class-tln-db_check-list-table.php:199
+msgid "&#8220;%s&#8221; (Edit)"
+msgstr "&laquo;&nbsp;%s&nbsp;&raquo; (Modifier)"
+
+#: class-tln-db_check-list-table.php:185
+msgid "Edit this comment"
+msgstr "Éditer ce commentaire"
+
 #: class-tln-db_check-list-table.php:189
 msgid "Edit this user"
 msgstr "Éditer cet utilisateur"
+
+#. translators: %s: link name
+#: class-tln-db_check-list-table.php:209
+msgid "Edit &#8220;%s&#8221;"
+msgstr "Modifier &laquo;&nbsp;%s&nbsp;&raquo;"
+
+#: class-tln-db_check-list-table.php:333 class-tln-db_check-list-table.php:433
+msgid "Title"
+msgstr "Titre"
 
 #: class-tln-db_check-list-table.php:334 class-tln-db_check-list-table.php:434
 msgid "Type"
@@ -353,6 +382,10 @@ msgstr "Si normalisé"
 msgid "Normalized Decoded"
 msgstr "Normalisé décodé"
 
+#: class-tln-db_check-list-table.php:465
+msgid "Select %s"
+msgstr "Selectionner %s"
+
 #: class-tln-db_check-list-table.php:501 class-tln-db_check-list-table.php:518
 msgid "Not normalizable!"
 msgstr "Non-normalisable&nbsp;!"
@@ -362,7 +395,7 @@ msgid "No difference!"
 msgstr "Aucune différence&nbsp;!"
 
 #. translators: %s: file name
-#: tools/gen_combining_class.php:34 tools/gen_tln_ins.php:130
+#: tools/gen_combining_class.php:36 tools/gen_tln_ins.php:132
 #: tools/gen_tln_regex_alts.php:135
 msgid "Could not read derived combining class file \"%s\""
 msgstr ""
@@ -370,20 +403,33 @@ msgstr ""
 "%s&nbsp;&raquo;"
 
 #. translators: %s: file name
-#: tools/gen_tln_ins.php:31 tools/gen_tln_regex_alts.php:31
+#: tools/gen_tln_ins.php:33 tools/gen_tln_regex_alts.php:31
 msgid "Could not read UCD derived normalization properties file \"%s\""
 msgstr ""
 "Impossible de lire le fichier UCD dérivé de propriétés de normalisation "
 "&laquo;&nbsp;%s&nbsp;&raquo;"
 
 #. translators: %s: file name
-#: tools/gen_tln_ins.php:115 tools/gen_tln_regex_alts.php:120
+#: tools/gen_tln_ins.php:117 tools/gen_tln_regex_alts.php:120
 msgid ""
 "Missing NO or MAYBE codepoints in UCD derived normalization properties file "
 "\"%s\""
 msgstr ""
 "Il y a les codepoints NO ou MAYBE manquer dans le fichier UCD dérivé de "
 "propriétés de normalisation &laquo;&nbsp;%s&nbsp;&raquo;"
+
+#. translators: %s: file name
+#: tools/gen_unidata.php:32
+msgid "Could not read composition exclusions file \"%s\""
+msgstr ""
+"Impossible de lire le fichier d&rsquo;exclusions de composition &laquo;&nbsp;"
+"%s&nbsp;&raquo;"
+
+#. translators: %s: file name
+#: tools/gen_unidata.php:74
+msgid "Could not read unicode data file \"%s\""
+msgstr ""
+"Impossible de lire le fichier de données unicode &laquo;&nbsp;%s&nbsp;&raquo;"
 
 #. Plugin Name of the plugin/theme
 msgid "Normalizer"
@@ -517,10 +563,6 @@ msgstr "http://torstenlandsiedel.de"
 #~ "ça marche&nbsp;&raquo; sur un total de %4$d)"
 
 #, fuzzy
-#~ msgid "No comments"
-#~ msgstr "Pas de commentaire"
-
-#, fuzzy
 #~ msgid "No approved comments"
 #~ msgstr "Aucun commentaire approuvé"
 
@@ -547,10 +589,6 @@ msgstr "http://torstenlandsiedel.de"
 #, fuzzy
 #~ msgid "Last page"
 #~ msgstr "Dernière page"
-
-#, fuzzy
-#~ msgid "Select All"
-#~ msgstr "Tout sélectionner"
 
 #, fuzzy
 #~ msgctxt "paging"

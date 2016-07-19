@@ -10,7 +10,7 @@
  */
 
 // gitlost removed namespace stuff, renamed to TLN_Normalizer to avoid conflicts.
-// gitlost use single-byte preg_XXX()'s, and generated regex alternatives and preg_match_all(), added full isNormalized() check for NFC with fall back to normalize().
+// gitlost use tln_is_valid_utf8(), and generated regex alternatives and preg_match_all(), added full isNormalized() check for NFC with fall back to normalize().
 // https://github.com/symfony/polyfill/tree/master/src/Intl/Normalizer
 
 // namespace Symfony\Polyfill\Intl\Normalizer; // gitlost
@@ -26,57 +26,40 @@
  * @internal
  */
 // gitlost begin
-// See https://www.w3.org/International/questions/qa-forms-utf-8
-define( 'TLN_REGEX_IS_VALID_UTF8',
-			'/\A(?:
-			  [\x00-\x7f]                                     # ASCII
-			| [\xc2-\xdf][\x80-\xbf]                          # non-overlong 2-byte
-			| \xe0[\xa0-\xbf][\x80-\xbf]                      # excluding overlongs
-			| [\xe1-\xec\xee\xef][\x80-\xbf][\x80-\xbf]       # straight 3-byte
-			| \xed[\x80-\x9f][\x80-\xbf]                      # excluding surrogates
-			| \xf0[\x90-\xbf][\x80-\xbf][\x80-\xbf]           # planes 1-3
-			| [\xf1-\xf3][\x80-\xbf][\x80-\xbf][\x80-\xbf]    # planes 4-15
-			| \xf4[\x80-\x8f][\x80-\xbf][\x80-\xbf]           # plane 16
-			)*+\z/x'
-);
-// Unfortunately the above seg faults for older versions of PCRE for strings > ~1K. PCRE 8.31 (06-Jul-2012, bundled with PHP 5.3.19) is lowest known working version, might work for lower.
-// Definitely doesn't work for PCRE 8.12 (15-Jan-2011, bundled with PHP 5.3.18). So for PCRE < 8.31 use UTF-8 mode if available and compliant, or htmlspecialchars() if compliant,
-// or as a last resort the following regex, a negated version of the above.
+// To test UTF-8 validity, use UTF-8 mode if available and RFC 3629 compliant, or htmlspecialchars() if RFC 3629 compliant, or as a last resort the following regex.
 define( 'TLN_REGEX_IS_INVALID_UTF8',
-			'/
-			  [\xc0\xc1\xf5-\xff]
-			| [\xc2-\xf4](?: [^\x80-\xbf] | \z )
-			| [\xe0-\xf4][\x80-\xbf](?: [^\x80-\xbf] | \z )
-			| [\xf0-\xf4][\x80-\xbf][\x80-\xbf](?: [^\x80-\xbf] | \z )
-			| [\xed\xf4][\xa0-\xbf]
-			| [\xe0\xf0][\x80-\x8f]
-			| [\xe0\xf4][\x90-\x9f]
-			| (?<= \A | [\x00-\x7f] | [\xc2-\xdf][\x80-\xbf] | [\xe0-\xef][\x80-\xbf][\x80-\xbf] | [\xf0-\xf4][\x80-\xbf][\x80-\xbf][\x80-\xbf] )[\x80-\xbf]
-			/x'
+	'/
+	  # The use of (*SKIP) verbs would double the speed here but unfortunately are only available for PCRE >= 7.3.
+	  (?> [\xc2-\xdf] (?: [^\x80-\xbf] | .[\x80-\xbf] | \z ) )
+	| (?> [\xe0-\xef] (?: [^\x80-\xbf] | (?<= \xe0 ) [\x80-\x9f] | (?<= \xed ) [\xa0-\xbf] | . (?: [^\x80-\xbf] | .[\x80-\xbf] | \z ) | \z ) )
+	| (?> [\xf0-\xf4] (?: [^\x80-\xbf] | (?<= \xf0 ) [\x80-\x8f] | (?<= \xf4 ) [\x90-\xbf] | . (?: [^\x80-\xbf] | . (?: [^\x80-\xbf] | .[\x80-\xbf] | \z ) | \z ) | \z ) )
+	| [\x80-\xc1\xf5-\xff] (?<= [\x00-\x7f]. | \A. )
+	| [\xc0\xc1\xf5-\xff]
+	/sx'
 );
-if ( version_compare( substr( PCRE_VERSION, 0, strspn( PCRE_VERSION, '01234567890.-' ) ), '8.31', '<' ) ) {
-	// If before PCRE RFC 3629 compliance or if UTF-8 mode not available.
-	if ( version_compare( substr( PCRE_VERSION, 0, strspn( PCRE_VERSION, '01234567890.-' ) ), '7.3', '<' ) || false === @preg_match( '//u', '' ) ) {
-		// If before htmlspecialchars() RFC 3629 compliance.
-		if ( version_compare( PHP_VERSION, '5.3.4', '<' ) ) {
-			function tln_is_valid_utf8( $str ) {
-				// Very slow for valid strings.
-				return 1 !== preg_match( TLN_REGEX_IS_INVALID_UTF8, $str );
-			}
-		} else {
-			function tln_is_valid_utf8( $str ) {
-				// See https://core.trac.wordpress.org/ticket/29717#comment:11
-				return '' === $str || '' !== htmlspecialchars( $str, ENT_NOQUOTES, 'UTF-8' );
-			}
+// UTF-8 mode was not PCRE RFC 3629 compliant until PCRE 7.3, and then there was a compliance regression for PCRE 8.32 due to an over-enthusiastic interpretation of non-characters.
+// See https://tools.ietf.org/html/rfc3629
+// See http://vcs.pcre.org/pcre/code/tags/pcre-8.32/pcre_valid_utf8.c?r1=1032&r2=1098 for the regression.
+// See http://www.unicode.org/versions/corrigendum9.html for the clarification.
+// If UTF-8 mode is not RFC 3629 compliant or is unavailable...
+if ( version_compare( substr( PCRE_VERSION, 0, strspn( PCRE_VERSION, '01234567890.-' ) ), '7.3', '<' )
+		|| version_compare( substr( PCRE_VERSION, 0, strspn( PCRE_VERSION, '01234567890.-' ) ), '8.32', '=' )
+		|| false === @preg_match( '//u', '' ) ) {
+	// If before htmlspecialchars() RFC 3629 compliance...
+	if ( version_compare( PHP_VERSION, '5.3.4', '<' ) ) {
+		function tln_is_valid_utf8( $str ) {
+			// Very slow for PHP < 7.
+			return 1 !== preg_match( TLN_REGEX_IS_INVALID_UTF8, $str );
 		}
 	} else {
 		function tln_is_valid_utf8( $str ) {
-			return 1 === preg_match( '//u', $str ); // Original Normalizer validity check.
+			// See https://core.trac.wordpress.org/ticket/29717#comment:11
+			return '' === $str || '' !== htmlspecialchars( $str, ENT_NOQUOTES, 'UTF-8' );
 		}
 	}
 } else {
 	function tln_is_valid_utf8( $str ) {
-		return 1 === preg_match( TLN_REGEX_IS_VALID_UTF8, $str );
+		return 1 === preg_match( '//u', $str ); // Original Normalizer validity check.
 	}
 }
 if ( ! defined( 'TLN_REGEX_ALTS_NFC_NOES' ) ) {

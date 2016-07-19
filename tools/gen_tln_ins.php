@@ -1,5 +1,7 @@
 <?php
 /**
+ * NOTE: This is now obsolete.
+ *
  * Output "tln_ins.php", generating the regular expression alternatives
  * from the UCD derived normalization properties file "DerivedNormalizationProps.txt"
  * and the derived combining class file "DerivedCombiningClass.txt".

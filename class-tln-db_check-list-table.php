@@ -42,7 +42,7 @@ class TLN_DB_Check_List_Table extends TLN_List_Table {
 
 		$this->standard_types = array(
 			'post' => __( 'Post, Page', 'normalizer' ),
-			'comment' => __( 'Comment' /*Use WP string*/ ),
+			'comment' => __( 'Comment', 'normalizer' ),
 			'term' => __( 'Category, Tag', 'normalizer' ),
 			'user' => __( 'User', 'normalizer' ),
 			'options' => __( 'Options', 'normalizer' ),
@@ -177,12 +177,12 @@ class TLN_DB_Check_List_Table extends TLN_List_Table {
 				$url = get_edit_post_link( $item['id'] );
 				if ( $url ) {
 					/* translators: %s: post title */
-					$aria_label_html = sprintf( ' aria-label="%s"', esc_attr( sprintf( __( '&#8220;%s&#8221; (Edit)' /*Use WP string*/ ), $item['title'] ) ) );
+					$aria_label_html = sprintf( ' aria-label="%s"', esc_attr( sprintf( __( '&#8220;%s&#8221; (Edit)', 'normalizer' ), $item['title'] ) ) );
 				}
 			}
 		} elseif ( 'comment' === $item['type'] ) {
 			$url = admin_url( 'comment.php?action=editcomment&c=' . $item['id'] );
-			$aria_label_html = sprintf( ' aria-label="%s"', esc_attr( __( 'Edit this comment' /*Use WP string*/ ) ) );
+			$aria_label_html = sprintf( ' aria-label="%s"', esc_attr( __( 'Edit this comment', 'normalizer' ) ) );
 		} elseif ( 'user' === $item['type'] ) {
 			$url = get_edit_user_link( $item['id'] );
 			if ( $url ) {
@@ -196,7 +196,7 @@ class TLN_DB_Check_List_Table extends TLN_List_Table {
 			}
 			if ( $url ) {
 				/* translators: %s: taxonomy term name */
-				$aria_label_html = sprintf( ' aria-label="%s"', esc_attr( sprintf( __( '&#8220;%s&#8221; (Edit)' /*Use WP string*/ ), $item['title'] ) ) );
+				$aria_label_html = sprintf( ' aria-label="%s"', esc_attr( sprintf( __( '&#8220;%s&#8221; (Edit)', 'normalizer' ), $item['title'] ) ) );
 			}
 		} elseif ( 'options' === $item['type'] ) {
 			$url = ''; // TODO: Map standard options to a url.
@@ -206,7 +206,7 @@ class TLN_DB_Check_List_Table extends TLN_List_Table {
 			$url = get_edit_bookmark_link( $item['id'] );
 			if ( $url ) {
 				/* translators: %s: link name */
-				$aria_label_html = sprintf( ' aria-label="%s"', esc_attr( sprintf( __( 'Edit &#8220;%s&#8221;' /*Use WP string*/ ), $item['title'] ) ) );
+				$aria_label_html = sprintf( ' aria-label="%s"', esc_attr( sprintf( __( 'Edit &#8220;%s&#8221;', 'normalizer' ), $item['title'] ) ) );
 			}
 		} else { // Shouldn't happen.
 			$url = '';
@@ -330,7 +330,7 @@ class TLN_DB_Check_Items_List_Table extends TLN_DB_Check_List_Table {
 	public function get_columns() {
 		$columns = array();
 
-		$columns['title'] = __( 'Title' /*Use WP string*/ );
+		$columns['title'] = __( 'Title', 'normalizer' );
 		$columns['type'] = __( 'Type', 'normalizer' );
 		$columns['field'] = __( 'Field (1st detected only)', 'normalizer' );
 
@@ -430,7 +430,7 @@ class TLN_DB_Check_Slugs_List_Table extends TLN_DB_Check_List_Table {
 		$columns = array();
 
 		$columns['cb'] = '<input type="checkbox" />';
-		$columns['title'] = __( 'Title' /*Use WP string*/ );
+		$columns['title'] = __( 'Title', 'normalizer' );
 		$columns['type'] = __( 'Type', 'normalizer' );
 		$columns['slug'] = __( 'Slug', 'normalizer' );
 		$columns['decoded'] = __( 'Decoded', 'normalizer' );
@@ -462,7 +462,7 @@ class TLN_DB_Check_Slugs_List_Table extends TLN_DB_Check_List_Table {
 	protected function column_cb( $item ) {
 		$value = $item['id'] . ':' . $item['type'] . ':' . $item['idx'];
 		?>
-		<label class="screen-reader-text" for="cb-select-<?php echo $item['id']; ?>"><?php printf( __( 'Select %s' /*Use WP string*/ ), $item['title'] ); ?></label>
+		<label class="screen-reader-text" for="cb-select-<?php echo $item['id']; ?>"><?php printf( __( 'Select %s', 'normalizer' ), $item['title'] ); ?></label>
 		<input id="cb-select-<?php echo $item['id']; ?>" type="checkbox" name="item[]" value="<?php echo esc_attr( $value ); ?>" />
 		<?php
 	}

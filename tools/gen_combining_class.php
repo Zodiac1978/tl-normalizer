@@ -1,14 +1,16 @@
 <?php
 /**
+ * NOTE: This is now obsolete. See "tools/gen_unidata.php".
+ *
  * Output "Symfony/Resources/unidata/combiningClass.php" from 
  * the UCD derived combining class file "DerivedCombiningClass.txt".
  *
- * This is reverse engineered to update the Symfony polyfill to UCD 8.0.0
+ * This is reverse engineered to update the Symfony polyfill to UCD 9.0.0
  * conformance since as of April 2016 it was at UCD 7.0.0.
  * Actually didn't need to do this as tools available at
  * https://github.com/nicolas-grekas/Patchwork-UTF8/blob/master/src/Patchwork/Utf8/Compiler.php
  *
- * See http://www.unicode.org/Public/8.0.0/ucd/extracted/DerivedCombiningClass.txt
+ * See http://www.unicode.org/Public/9.0.0/ucd/extracted/DerivedCombiningClass.txt
  */
 
 $basename = basename( __FILE__ );
@@ -23,7 +25,7 @@ if ( ! function_exists( '__' ) ) {
 
 // Open the file.
 
-$filename ='/tests/UCD-8.0.0/extracted/DerivedCombiningClass.txt';
+$filename ='/tests/UCD-9.0.0/extracted/DerivedCombiningClass.txt';
 $file = dirname( $dirname ) . $filename;
 error_log( "$basename: reading file=$file" );
 

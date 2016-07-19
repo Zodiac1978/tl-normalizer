@@ -958,7 +958,7 @@ class TLNormalizer {
 	function load_db_check() {
 		tln_debug_log( "REQUEST=", $_REQUEST );
 		if ( ! current_user_can( $this->db_check_cap ) ) {
-			wp_die( __( 'You do not have sufficient permissions to access this page.' /*Use WP string*/ ) );
+			wp_die( __( 'Sorry, you are not allowed to access this page.', 'normalizer' ) );
 		}
 
 		$this->db_check_loaded = true;
@@ -1161,7 +1161,7 @@ class TLNormalizer {
 	 */
 	function db_check() {
 		if ( ! current_user_can( $this->db_check_cap ) ) {
-			wp_die( __( 'You do not have sufficient permissions to access this page.' /*Use WP string*/ ) );
+			wp_die( __( 'Sorry, you are not allowed to access this page.', 'normalizer' ) );
 		}
 
 		?>

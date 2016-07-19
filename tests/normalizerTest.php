@@ -32,6 +32,16 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 	static $normalizer_state = array();
 	static $new_8_0_0 = array( 0x8e3, 0xa69e, /*0xa69f,*/ 0xfe2e, 0xfe2f, 0x111ca, 0x1172b, ); // Combining class additions UCD 8.0.0 over 7.0.0
 	static $new_8_0_0_regex = '';
+	static $new_9_0_0 = array( // Combining class additions UCD 9.0.0 over 8.0.0
+		0x8d4, 0x8d5, 0x8d6, 0x8d7, 0x8d8, 0x8d9, 0x8da, 0x8db, 0x8dc, 0x8dd, 0x8de, 0x8df, 0x8e0, 0x8e1,
+		0x1dfb,
+		0x11442, 0x11446, 0x11c3f,
+		0x1e000, 0x1e001, 0x1e002, 0x1e003, 0x1e004, 0x1e005, 0x1e006,
+		0x1e008, 0x1e009, 0x1e00a, 0x1e00b, 0x1e00c, 0x1e00d, 0x1e00e, 0x1e00f, 0x1e010, 0x1e011, 0x1e012, 0x1e013, 0x1e014, 0x1e015, 0x1e016, 0x1e017, 0x1e018,
+		0x1e01b, 0x1e01c, 0x1e01d, 0x1e01e, 0x1e01f, 0x1e020, 0x1e021, 0x1e023, 0x1e024, 0x1e026, 0x1e027, 0x1e028, 0x1e029, 0x1e02a,
+		0x1e944, 0x1e945, 0x1e946, 0x1e947, 0x1e948, 0x1e949, 0x1e94a,
+	);
+	static $new_9_0_0_regex = '';
 	static $at_least_55_1 = false;
 	static $pcre_version = PCRE_VERSION;
 	static $true = true;
@@ -56,6 +66,9 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 			// Enable if using intl built with icu less than 56.1
 			self::$new_8_0_0_regex = '/' . implode( '|', array_map( __CLASS__.'::chr', self::$new_8_0_0 ) ) . '/';
 		}
+		// Always set for the mo as icu for Unicode 9.0.0 not yet released as of 15 Jul 2016.
+		self::$new_9_0_0_regex = '/' . implode( '|', array_map( __CLASS__.'::chr', self::$new_9_0_0 ) ) . '/';
+
 		self::$pcre_version = substr( PCRE_VERSION, 0, strspn( PCRE_VERSION, '01234567890.-' ) );
 
 		// Normalizer::isNormalized() returns an integer on HHVM and a boolean on PHP
@@ -102,6 +115,8 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 			ksort( $rin );
 
 			$this->assertSame( $rin, $rpn );
+		} else {
+			$this->markTestSkipped( 'Tests_TLN_Normalizer::test_constants: no class Normalizer' );
 		}
     }
 
@@ -221,6 +236,8 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 				$this->assertSame( $is_normalized, $tln_is_normalized );
 				$this->assertSame( $normalize, $tln_normalize );
 			}
+		} else {
+			$this->markTestSkipped( 'Tests_TLN_Normalizer::test_args_compat: no class Normalizer' );
 		}
 	}
 
@@ -281,11 +298,11 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 	}
 
     /**
-	 * @ticket tln_conformance_8_0_0
+	 * @ticket tln_conformance_9_0_0
      */
-    function test_conformance_8_0_0() {
+    function test_conformance_9_0_0() {
 
-        $t = file( dirname( __FILE__ ) . '/UCD-8.0.0/NormalizationTest.txt' );
+        $t = file( dirname( __FILE__ ) . '/UCD-9.0.0/NormalizationTest.txt' );
         $c = array();
 
 		// From NormalizationTest.txt header:
@@ -362,7 +379,7 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 					if ( $c[2] !== $c[1] ) {
 						$this->assertSame( self::$false, TLN_Normalizer::isNormalized( $c[1], TLN_Normalizer::NFC ) );
 					}
-					if ( ! self::$new_8_0_0_regex || ! preg_match( self::$new_8_0_0_regex, $c[1] ) ) {
+					if ( ( ! self::$new_8_0_0_regex || ! preg_match( self::$new_8_0_0_regex, $c[1] ) ) && ( ! self::$new_9_0_0_regex || ! preg_match( self::$new_9_0_0_regex, $c[1] ) ) ) {
 						$this->assertSame( $normalize_n = Normalizer::normalize( $c[1], Normalizer::NFC ), $normalize_t = TLN_Normalizer::normalize( $c[1], TLN_Normalizer::NFC ), "$line_num: {$line}c[1]=" . bin2hex( $c[1] ) . ", normalize_n=" . bin2hex( $normalize_n ) . ", normalize_t=" . bin2hex( $normalize_t ) );
 					}
 					$this->assertSame( Normalizer::normalize( $c[2], Normalizer::NFC ), TLN_Normalizer::normalize( $c[2], TLN_Normalizer::NFC ) );
@@ -379,17 +396,20 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 						if ( self::$new_8_0_0_regex ) {
 							$c1 = preg_replace( self::$new_8_0_0_regex, '', $c1 );
 						}
+						if ( self::$new_9_0_0_regex ) {
+							$c1 = preg_replace( self::$new_9_0_0_regex, '', $c1 );
+						}
 						$this->assertSame( Normalizer::normalize( $c1, Normalizer::NFC ), TLN_Normalizer::normalize( $c1, TLN_Normalizer::NFC ), "$line_num: {$line}c1=" . bin2hex( $c1 ) );
 					}
 				}
 
-				$this->assertSame( $c[3], TLN_Normalizer::normalize( $c[1], TLN_Normalizer::NFD ) );
+				$this->assertSame( $c[3], TLN_Normalizer::normalize( $c[1], TLN_Normalizer::NFD ), "$line_num: {$line}c[3]=" . bin2hex( $c[3] ) );
 				$this->assertSame( $c[3], TLN_Normalizer::normalize( $c[2], TLN_Normalizer::NFD ) );
 				$this->assertSame( $c[3], TLN_Normalizer::normalize( $c[3], TLN_Normalizer::NFD ) );
 				$this->assertSame( $c[5], TLN_Normalizer::normalize( $c[4], TLN_Normalizer::NFD ) );
 				$this->assertSame( $c[5], TLN_Normalizer::normalize( $c[5], TLN_Normalizer::NFD ) );
 
-				$this->assertSame( $c[4], TLN_Normalizer::normalize( $c[1], TLN_Normalizer::NFKC ) );
+				$this->assertSame( $c[4], TLN_Normalizer::normalize( $c[1], TLN_Normalizer::NFKC ), "$line_num: {$line}c[4]=" . bin2hex( $c[4] ) );
 				$this->assertSame( $c[4], TLN_Normalizer::normalize( $c[2], TLN_Normalizer::NFKC ) );
 				$this->assertSame( $c[4], TLN_Normalizer::normalize( $c[3], TLN_Normalizer::NFKC ) );
 				$this->assertSame( $c[4], TLN_Normalizer::normalize( $c[4], TLN_Normalizer::NFKC ) );
@@ -404,7 +424,7 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 				if ( $x ) {
 					for ( $i = $last_x + 1; $i < $x; $i++ ) {
 						$c1 = self::chr( $i );
-						if ( 1 === preg_match( TLN_REGEX_IS_VALID_UTF8, $c1 ) ) {
+						if ( tln_is_valid_utf8( $c1 ) ) {
 							$this->assertSame( self::$true, TLN_Normalizer::isNormalized( $c1, TLN_Normalizer::NFC ), "$line_num: {$line}c1=" . bin2hex( $c1 ) );
 							$this->assertSame( $c1, TLN_Normalizer::normalize( $c1, TLN_Normalizer::NFC ) );
 						}
@@ -442,10 +462,15 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 				if ( self::$new_8_0_0_regex ) {
 					$str = preg_replace( self::$new_8_0_0_regex, '', $str );
 				}
+				if ( self::$new_9_0_0_regex ) {
+					$str = preg_replace( self::$new_9_0_0_regex, '', $str );
+				}
 				$this->assertSame( Normalizer::isNormalized( $str ), TLN_Normalizer::isNormalized( $str ) );
 				$this->assertSame( Normalizer::normalize( $str ), TLN_Normalizer::normalize( $str ) );
 				unset( $str );
 			}
+		} else {
+			$this->markTestSkipped( 'Tests_TLN_Normalizer::test_random: no class Normalizer' );
 		}
 	}
 
@@ -455,7 +480,6 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 	 */
 	function test_is_valid_utf8_true( $str ) {
 		$this->assertTrue( tln_is_valid_utf8( $str ) );
-		$this->assertTrue( 1 === preg_match( TLN_REGEX_IS_VALID_UTF8, $str ) );
 		if ( version_compare( self::$pcre_version, '7.3', '>=' ) && version_compare( self::$pcre_version, '8.32', '!=' ) ) { // RFC 3629 compliant and without 8.32 regression (rejecting non-chars).
 			$this->assertTrue( 1 === preg_match( '//u', $str ) );
 		}
@@ -493,7 +517,6 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 	 */
 	function test_is_valid_utf8_false( $str ) {
 		$this->assertFalse( tln_is_valid_utf8( $str ) );
-		$this->assertFalse( 1 === preg_match( TLN_REGEX_IS_VALID_UTF8, $str ) );
 		if ( version_compare( self::$pcre_version, '7.3', '>=' ) && version_compare( self::$pcre_version, '8.32', '!=' ) ) { // RFC 3629 compliant and without 8.32 regression (rejecting non-chars).
 			$this->assertFalse( 1 === preg_match( '//u', $str ) );
 		}
@@ -506,12 +529,13 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 	function data_is_valid_utf8_false() {
 		$ret = array(
 			array( "\x80" ), array( "\xff" ), array( "a\x81" ), array( "\x83b" ), array( "a\x81b" ),
-			array( "ab\xff"), array( "\xc2\x7f" ), array( "\xc0\x80" ), array( "\xc1\x80" ), array( "a\xc2\xc0" ),
+			array( "ab\xff"), array( "\xc2\x7f" ), array( "\xc0\xb1" ), array( "\xc1\x81" ), array( "a\xc2\xc0" ),
 			array( "a\xd0\x7fb" ), array( "ab\xdf\xc0" ), array( "\xe2\x80" ), array( "a\xe2\x80" ), array( "a\xe2\x80b" ),
 			array( "\xf1\x80" ), array( "\xe1\x7f\x80" ), array( "\xe0\x9f\x80" ), array( "\xed\xa0\x80" ), array( "\xef\x7f\x80" ),
 			array( "\xef\xbf\xc0" ), array( "\xc2\xa0\x80" ), array( "\xf0\x90\x80" ), array( "\xe2\xa0\x80\x80" ), array( "\xf5\x80\x80\x80" ),
 			array( "\xf0\x8f\x80\x80" ), array( "\xf4\x90\x80\x80" ), array( "\xf5\x80\x80\x80\x80" ), array( "a\xf5\x80\x80\x80\x80" ), array( "a\xf5\x80\x80\x80\x80b" ),
-			array( "a\xc2\x80\x80b" ), array( "a\xc2\x80\xef\xbf\xbf\x80c" ), array( "a\xc2\x80\xe2\x80\x80\xf3\x80\x80\x80\x80b" ),
+			array( "a\xc2\x80\x80b" ), array( "a\xc2\x80\xef\xbf\xbf\x80c" ), array( "a\xc2\x80\xe2\x80\x80\xf3\x80\x80\x80\x80b" ), array( "\xe0\x80\xb1" ), array( "\xf0\x80\x80\xb1" ),
+			array( "\xf8\x80\x80\x80\xb1" ), array( "\xfc\x80\x80\x80\x80\xb1" ),
 		);
 
 		// From "tests/phpunit/tests/formatting/SeemsUtf8.php", "tests/phpunit/data/formatting/big5.txt".
@@ -533,7 +557,6 @@ class Tests_TLN_Normalizer extends WP_UnitTestCase {
 		for ( $i = 0; $i < $num_tests; $i++ ) {
 			$str = tln_utf8_rand_ratio_str( 100, 0.1 );
 			$this->assertFalse( tln_is_valid_utf8( $str ) );
-			$this->assertFalse( 1 === preg_match( TLN_REGEX_IS_VALID_UTF8, $str ) );
 			if ( version_compare( self::$pcre_version, '7.3', '>=' ) ) { // RFC 3629 compliant.
 				$this->assertFalse( 1 === preg_match( '//u', $str ) );
 			}

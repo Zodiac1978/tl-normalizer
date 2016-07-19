@@ -747,7 +747,7 @@ class Tests_TLN_DB_Check extends WP_UnitTestCase {
 		}
 		$this->assertSame( 1, count( self::$func_args['wp_die'] ) );
 		$args = self::$func_args['wp_die'][0];
-		$this->assertTrue( false !== stripos( $args['message'], 'permission' ) );
+		$this->assertTrue( false !== stripos( $args['message'], 'allowed' ) );
 
 		self::clear_func_args();
 
@@ -758,7 +758,7 @@ class Tests_TLN_DB_Check extends WP_UnitTestCase {
 		}
 		$this->assertSame( 1, count( self::$func_args['wp_die'] ) );
 		$args = self::$func_args['wp_die'][0];
-		$this->assertTrue( false !== stripos( $args['message'], 'permission' ) );
+		$this->assertTrue( false !== stripos( $args['message'], 'allowed' ) );
 
 		self::clear_func_args();
 
