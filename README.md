@@ -1,3 +1,5 @@
+[![Current Normalizer version](https://img.shields.io/wordpress/plugin/v/normalizer.svg)](https://wordpress.org/plugins/normalizer/) [![Number of downloads](https://img.shields.io/wordpress/plugin/dt/normalizer.svg)](https://wordpress.org/plugins/normalizer/advanced/) [![Number of active installs](https://img.shields.io/wordpress/plugin/installs/normalizer.svg)](https://wordpress.org/plugins/normalizer/advanced/) [![WordPress plugin rating](https://img.shields.io/wordpress/plugin/r/normalizer.svg)](https://wordpress.org/plugins/normalizer/#reviews) 
+
 # TL Normalizer
 
 Normalizes content, excerpt, title and comment content to Normalization Form C.
