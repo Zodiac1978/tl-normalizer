@@ -1,0 +1,45 @@
+# Copyright (C) 2016 Normalizer
+# This file is distributed under the same license as the Normalizer package.
+msgid ""
+msgstr ""
+"Project-Id-Version: Normalizer 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/normalizer\n"
+"POT-Creation-Date: 2016-01-07 22:56:49+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2016-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+
+#: tl-normalize.php:41 tl-normalize.php:62
+msgid ""
+"Your PHP version is not 5.3.0 or later or your PHP is missing the required "
+"extension (intl)."
+msgstr ""
+
+#: tl-normalize.php:61
+msgid "Plugin deactivated!"
+msgstr ""
+
+#. Plugin Name of the plugin/theme
+msgid "Normalizer"
+msgstr ""
+
+#. Plugin URI of the plugin/theme
+msgid "https://github.com/Zodiac1978/tl-normalizer"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid ""
+"Normalizes content, excerpt, title and comment content to Normalization Form "
+"C."
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "Torsten Landsiedel"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "https://torstenlandsiedel.de"
+msgstr ""
