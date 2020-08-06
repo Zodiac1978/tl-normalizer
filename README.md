@@ -12,7 +12,7 @@ http://www.w3.org/International/docs/charmod-norm/#choice-of-normalization-form
 ## Requirements
 
 Requires PHP 5.3+
-Be sure to have the PHP-Normalizer-extension (intl and icu) installed.
+Be sure to have the PHP-Normalizer-function available (intl extension has to be installed).
 See: http://php.net/manual/en/normalizer.normalize.php
 
 ## Installation
@@ -21,6 +21,14 @@ If you don’t know how to install a plugin for WordPress, [here’s how](http:/
 
 ## Changelog
 
-### 1.0
+### 1.1.0
+
+* Added to more (sanitize) filters
+* Added support for Advanced Custom Fields
+* Added (limited) support for Elementor and Beaver Builder
+* Added support for widgets
+* Updated readme.txt
+
+### 1.0.0
 
 * Initial release.
