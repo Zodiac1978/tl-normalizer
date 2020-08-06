@@ -3,7 +3,8 @@ Contributors: zodiac1978
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=LCH9UVV7RKDFY
 Tags: Unicode, Normalization, Form C, Unicode Normalization Form C, Normalize, Normalizer
 Requires at least: 1.5.2
-Tested up to: 4.3
+Tested up to: 5.5
+Requires PHP: 5.3
 Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -14,15 +15,15 @@ Normalizes content, excerpt, title and comment content to Normalization Form C.
 
 For everyone getting this warning from W3C validator: "Text run is not in Unicode Normalization Form C."
 
-See: http://www.w3.org/International/docs/charmod-norm/#choice-of-normalization-form
+See: [http://www.w3.org/International/docs/charmod-norm/#choice-of-normalization-form](http://www.w3.org/International/docs/charmod-norm/#choice-of-normalization-form)
 
 **Requires PHP 5.3+**
 
-Be sure to have the PHP-Normalizer-extension (intl and icu) installed.
+Be sure to have the Internationalization-extension (intl) installed.
 
-See: http://php.net/manual/en/normalizer.normalize.php
+See: [http://php.net/manual/en/normalizer.normalize.php](http://php.net/manual/en/normalizer.normalize.php)
 
-See also: https://core.trac.wordpress.org/ticket/30130
+See also: [https://core.trac.wordpress.org/ticket/30130](https://core.trac.wordpress.org/ticket/30130)
 
 == Installation ==
 
@@ -47,6 +48,14 @@ Sorry, but I don't have a clue. Maybe just a little bit.
 3. Error message from W3C
 
 == Changelog ==
+
+= 1.1.0 =
+* Added to more (sanitize) filters
+* Added support for Advanced Custom Fields
+* Added (limited) support for Elementor and Beaver Builder
+* Added support for widgets
+* Updated readme.txt
+
 
 = 1.0.0 =
 * Initial release
